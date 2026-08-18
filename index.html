@@ -42,33 +42,66 @@
             box-sizing: border-box;
         }
 
-        header {
+           header {
             position: relative;
             background-color: var(--primary-color);
             color: white;
-            text-align: center;
             padding: 15px 10px;
             border-bottom: 4px solid #113027;
             z-index: 10;
         }
 
+        /* イラストと文字を綺麗に横並びにするコンテナ */
+        .header-container {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding-left: 10px;
+            gap: 15px; /* イラストと文字の間隔 */
+        }
+
+        .header-logo-svg {
+            width: 65px;  /* PCでのイラストの大きさ */
+            height: 65px;
+            flex-shrink: 0;
+        }
+
+        .header-text {
+            text-align: left;
+        }
+
         header h1 {
             margin: 0;
-            font-size: 1.3rem;
+            font-size: 2.0rem !important; /* 文字サイズを大きく際立たせました！ */
             font-weight: bold;
-            letter-spacing: 1px;
-            text-align: left;
-            padding-left: 10px;
+            font-family: 'Hiragino Maru Gothic ProN', 'Yu Gothic', sans-serif; /* 柔らかい丸ゴシック */
+            letter-spacing: 1.5px;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
         }
 
         header p {
             margin: 4px 0 0 0;
-            font-size: 0.75rem;
+            font-size: 0.8rem !important;
             opacity: 0.9;
-            text-align: left;
-            padding-left: 10px;
             line-height: 1.3;
         }
+
+        /* スマホで見たときのサイズ調整（追加分） */
+        @media screen and (max-width: 768px) {
+            .header-logo-svg {
+                width: 50px; /* スマホではイラストを少しコンパクトに */
+                height: 50px;
+            }
+            header h1 {
+                font-size: 1.4rem !important; /* スマホでもしっかり読みやすい大文字 */
+            }
+            header p {
+                font-size: 0.7rem !important;
+            }
+        }
+
 
         /* 右上の「最初に戻る」ボタン */
         #header-home-btn {
@@ -120,11 +153,13 @@
         }
 
         .tab-btn {
-            flex: 1;
-            padding: 16px 5px;
+           flex: 1;
+            /* 上下の余白を16px ➔ 13pxに少しだけ詰め、文字が大きくなった分の高さを抑えます */
+            padding: 13px 5px !important; 
             border: none;
             background: none;
-            font-size: 0.95rem;
+            /* 文字サイズを0.95rem ➔ 1.12rem に少しだけ大きくします */
+            font-size: 1.12rem !important; 
             font-weight: bold;
             color: #7f8c8d;
             cursor: pointer;
@@ -650,9 +685,29 @@
 <body>
 
 <div id="app-container">
-    <header>
-        <h1 id="app-title">東京くらしごとナビ</h1>
-        <p>〜50代からの住まいとお仕事探しをひとまとめに〜</p>
+      <header>
+        <div class="header-container">
+            <!-- 100%確実に表示される、温かみのあるオリジナルイラスト -->
+            <div class="header-logo-svg">
+                <svg viewBox="0 0 100 100" width="100%" height="100%">
+                    <!-- 背景のやさしい光の輪 -->
+                    <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255, 255, 255, 0.25)" stroke-width="2.5" stroke-dasharray="5 3"/>
+                    <circle cx="50" cy="50" r="36" fill="rgba(255, 255, 255, 0.08)"/>
+                    <!-- お家（住まい） -->
+                    <path d="M26 50 L50 30 L74 50" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M32 50 L32 72 L68 72 L68 50" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <!-- 心のぬくもり（相談窓口・ココロ） -->
+                    <path d="M50 48 C48 44, 42 44, 42 49 C42 54, 50 59, 50 59 C50 59, 58 54, 58 49 C58 44, 52 44, 50 48 Z" fill="#e74c3c"/>
+                    <!-- 新しいスタートの若葉（仕事） -->
+                    <path d="M64 72 C74 72, 78 58, 73 50 C67 55, 67 66, 64 72" fill="#2ecc71"/>
+                </svg>
+            </div>
+            <!-- タイトルとサブタイトル -->
+            <div class="header-text">
+                <h1 id="app-title">東京くらしごとナビ</h1>
+                <p>〜50代からの住まいとお仕事探しをひとまとめに〜</p>
+            </div>
+        </div>
         <button id="header-home-btn" onclick="goToHome()">最初に戻る</button>
     </header>
 
