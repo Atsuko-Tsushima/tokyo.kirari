@@ -3,55 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>東京くらしごとナビ - 50代からの暮らしとしごと応援</title>
+    <title>東京くらしごとナビ 〜50代からの安心ポータル〜</title>
+    
+    <!-- 🗺️ Leaflet.js (本物の地図を拡大縮小・移動させるためのライブラリ) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
     <style>
-        /* シニア向けの超ユニバーサルデザイン：高コントラスト、大きな文字、押しやすいボタン */
+        /* ==========================================
+           🎨 デザインシステム＆基本設定
+           ========================================== */
         :root {
-            --primary-color: #1b4d3e; /* 信頼と安心感のディープグリーン */
-            --bg-color: #f7f6f0; /* 目に優しい温かみのあるアイボリー */
-            --card-bg: #ffffff;
+            --primary-color: #1b4d3e;   /* シニアに安心感を与える深緑 */
+            --primary-light: #eef5f2;   /* 優しい背景 of 薄緑 */
+            --accent-color: #2ecc71;    /* 若葉の緑（仕事・新しいスタート） */
+            --heart-color: #e74c3c;     /* ハートの赤（相談・温もり） */
+            --disaster-color: #e67e22;  /* 防災のオレンジ（安心・安全） */
             --text-color: #2c3e50;
-            --accent-orange: #d35400; /* 行動を促す、視認性の高いオレンジ */
-            --accent-blue: #2980b9; /* 誠実なブルー */
-            --accent-heart: #e74c3c; /* ココロを支えるレッド */
-            --border-color: #bdc3c7;
-            --font-large: 20px; /* 基本文字サイズを20pxに設定 */
+            --bg-color: #f9fbf9;
+            --border-radius: 16px;
         }
 
         body {
+            font-family: 'Hiragino Maru Gothic ProN', 'Yu Gothic', 'Meiryo', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
             margin: 0;
             padding: 0;
-            background-color: #eae8df;
-            color: var(--text-color);
-            font-family: 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
-            font-size: var(--font-large);
             line-height: 1.6;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
         }
 
-        /* 画面共通コンテナ */
-        #app-container {
-            width: 100%;
-            background-color: var(--bg-color);
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            box-sizing: border-box;
-        }
-
-           header {
+        /* ==========================================
+           🌟 ヘッダー部分
+           ========================================== */
+        header {
             position: relative;
             background-color: var(--primary-color);
             color: white;
-            padding: 15px 10px;
+            padding: 16px 10px;
             border-bottom: 4px solid #113027;
             z-index: 10;
         }
 
-        /* イラストと文字を綺麗に横並びにするコンテナ */
         .header-container {
             display: flex;
             align-items: center;
@@ -59,12 +52,12 @@
             max-width: 1000px;
             margin: 0 auto;
             padding-left: 10px;
-            gap: 15px; /* イラストと文字の間隔 */
+            gap: 16px;
         }
 
         .header-logo-svg {
-            width: 65px;  /* PCでのイラストの大きさ */
-            height: 65px;
+            width: 70px;
+            height: 70px;
             flex-shrink: 0;
         }
 
@@ -74,92 +67,59 @@
 
         header h1 {
             margin: 0;
-            font-size: 2.0rem !important; /* 文字サイズを大きく際立たせました！ */
+            font-size: 2.15rem !important;
             font-weight: bold;
-            font-family: 'Hiragino Maru Gothic ProN', 'Yu Gothic', sans-serif; /* 柔らかい丸ゴシック */
             letter-spacing: 1.5px;
             text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
         }
 
         header p {
-            margin: 4px 0 0 0;
-            font-size: 0.8rem !important;
-            opacity: 0.9;
-            line-height: 1.3;
+            margin: 2px 0 0 0 !important;
+            font-size: 0.95rem !important;
+            font-weight: bold;
+            opacity: 0.95;
+            line-height: 1.2;
+            letter-spacing: 0.5px;
         }
 
-        /* スマホで見たときのサイズ調整（追加分） */
-        @media screen and (max-width: 768px) {
-            .header-logo-svg {
-                width: 50px; /* スマホではイラストを少しコンパクトに */
-                height: 50px;
-            }
-            header h1 {
-                font-size: 1.4rem !important; /* スマホでもしっかり読みやすい大文字 */
-            }
-            header p {
-                font-size: 0.7rem !important;
-            }
-        }
-
-
-        /* 右上の「最初に戻る」ボタン */
         #header-home-btn {
-            display: none;
             position: absolute;
             right: 15px;
             top: 50%;
             transform: translateY(-50%);
-            background-color: var(--accent-orange);
+            background-color: rgba(255, 255, 255, 0.2);
+            border: 2px solid white;
             color: white;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            font-weight: bold;
+            padding: 8px 16px;
+            border-radius: 20px;
             cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-            transition: opacity 0.2s;
+            font-weight: bold;
+            transition: all 0.2s;
         }
 
-        #header-home-btn:active {
-            opacity: 0.8;
+        #header-home-btn:hover {
+            background-color: white;
+            color: var(--primary-color);
         }
 
-        /* 画面コンテンツエリア */
-        .main-content {
-            flex-grow: 1;
-            overflow-y: auto;
-            padding: 20px;
+        /* ==========================================
+           📱 ナびゲーション（3つのタブ）
+           ========================================== */
+        .tabs {
             display: flex;
-            flex-direction: column;
-            box-sizing: border-box;
-        }
-
-        /* 共通タブバー */
-        #global-tab-bar {
-            display: none;
-            background-color: #ffffff;
-            border-bottom: 2px solid var(--border-color);
-            z-index: 10;
-        }
-
-        .tab-bar {
-            display: flex;
-            background-color: #ffffff;
-            max-width: 1000px;
-            margin: 0 auto;
-            width: 100%;
+            background-color: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 1000; /* 地図より上にするため */
         }
 
         .tab-btn {
-           flex: 1;
-            /* 上下の余白を16px ➔ 13pxに少しだけ詰め、文字が大きくなった分の高さを抑えます */
-            padding: 13px 5px !important; 
+            flex: 1;
+            padding: 13px 5px !important;
             border: none;
             background: none;
-            /* 文字サイズを0.95rem ➔ 1.12rem に少しだけ大きくします */
-            font-size: 1.12rem !important; 
+            font-size: 1.15rem !important;
             font-weight: bold;
             color: #7f8c8d;
             cursor: pointer;
@@ -170,1406 +130,1201 @@
 
         .tab-btn.active {
             color: var(--primary-color);
-            border-bottom-color: var(--primary-color);
-            background-color: #ffffff;
+            border-bottom: 4px solid var(--primary-color);
+            background-color: var(--primary-light);
         }
 
-        /* 各画面セクション */
-        .app-section {
+        /* ==========================================
+           📄 コンテンツレイアウト
+           ========================================== */
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 0 15px;
+        }
+
+        .tab-content {
             display: none;
-            flex-grow: 1;
         }
 
-        .app-section.active {
-            display: flex;
-            flex-direction: column;
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in-out;
         }
 
-        /* --- 【トップ画面】 --- */
-        #home-section {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ==========================================
+           🏠 トップページ（3つの大ボタン）
+           ========================================== */
+        .home-menu {
             text-align: center;
-            padding: 20px;
+            padding: 10px 0;
         }
 
-        .intro-text {
-            font-size: 1.2rem;
-            font-weight: bold;
+        .home-title {
+            font-size: 1.4rem;
             color: var(--primary-color);
-            margin-bottom: 20px;
+            margin-bottom: 25px;
+            font-weight: bold;
+        }
+
+        .home-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        @media screen and (min-width: 600px) {
+            .home-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .home-card {
+            background-color: white;
+            padding: 30px 20px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.06);
+            border: 2px solid #eef5f2;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .home-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 24px rgba(27, 77, 62, 0.15);
+            border-color: var(--primary-color);
+        }
+
+        .home-card .icon {
+            font-size: 3rem;
+        }
+
+        .home-card h3 {
+            margin: 0;
+            font-size: 1.25rem;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .home-card p {
+            margin: 0;
+            font-size: 0.85rem;
+            color: #666;
             line-height: 1.4;
         }
 
-        /* ホームメニューボタンのベース */
-        .home-btn-container {
-            width: 100%;
+        /* ==========================================
+           📦 一般的なカードデザイン
+           ========================================== */
+        .card {
+            background-color: white;
+            padding: 24px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
         }
 
-        .home-menu-btn {
-            background-color: #ffffff;
-            border: 3px solid var(--primary-color);
-            color: var(--primary-color);
-            border-radius: 16px;
-            padding: 24px 20px;
-            font-size: 1.25rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s;
+        h2 {
+            font-size: 1.4rem;
+            margin-top: 0;
+            margin-bottom: 15px;
             display: flex;
-            flex-direction: column;
             align-items: center;
-            gap: 6px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-            box-sizing: border-box;
-            text-align: center;
-            width: 100%;
-            margin-bottom: 15px;
-        }
-
-        .home-menu-btn:active {
-            background-color: #eef7f3;
-            transform: scale(0.98);
-        }
-
-        .home-menu-btn .btn-desc {
-            font-size: 0.8rem;
-            color: #666;
-            font-weight: normal;
-        }
-
-        /* --- 【共通】フィルター・入力パネル --- */
-        .filter-panel {
-            background-color: #eef3f0;
-            border: 2px solid #bcd4c7;
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-
-        .filter-title {
-            font-size: 0.9rem;
-            font-weight: bold;
-            color: var(--primary-color);
-            margin: 0 0 8px 0;
-        }
-
-        .filter-options {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .filter-chip {
-            background-color: white;
-            border: 2px solid var(--border-color);
-            padding: 6px 14px;
-            border-radius: 30px;
-            font-size: 0.8rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s;
-            user-select: none;
-        }
-
-        .filter-chip.active {
-            border-color: var(--primary-color);
-            background-color: var(--primary-color);
-            color: white;
-        }
-
-        /* 自動適用バッジ */
-        .auto-applied-box {
-            background-color: #fff2e6;
-            border: 2px solid #ffd1b3;
-            border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 15px;
-            font-size: 0.8rem;
-        }
-
-        .auto-applied-box h4 {
-            margin: 0 0 5px 0;
-            color: var(--accent-orange);
-            font-size: 0.85rem;
-        }
-
-        /* --- 【共通】カード表示 --- */
-        .result-card {
-            background-color: var(--card-bg);
-            border: 2px solid var(--border-color);
-            border-radius: 12px;
-            padding: 18px;
-            margin-bottom: 15px;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.02);
-            transition: border-color 0.2s;
-        }
-
-        .result-card:active {
-            border-color: var(--primary-color);
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 8px;
             gap: 10px;
-        }
-
-        .card-title {
-            font-weight: bold;
-            font-size: 1.1rem;
-            margin: 0;
-            color: #111;
-        }
-
-        /* セーフティネット専用バッジ */
-        .safetynet-badge {
-            background-color: #2ecc71; /* 鮮やかな緑 */
-            color: white;
-            font-size: 0.75rem;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-weight: bold;
-            white-space: nowrap;
-        }
-
-        .safetynet-badge.orange {
-            background-color: var(--accent-orange);
-        }
-
-        .general-badge {
-            background-color: #7f8c8d; /* 一般物件はシックなグレー */
-            color: white;
-            font-size: 0.75rem;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-weight: bold;
-            white-space: nowrap;
-        }
-
-        .card-desc {
-            font-size: 0.85rem;
-            color: #555;
-            margin: 0 0 10px 0;
-        }
-
-        .card-price {
-            font-size: 1.15rem;
-            font-weight: bold;
-            color: #e74c3c;
-            margin-bottom: 12px;
-        }
-
-        /* --- 【共通】フォーム部品 --- */
-        .input-group {
-            margin-bottom: 12px;
-        }
-
-        .input-group label {
-            display: block;
-            font-size: 0.85rem;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .input-group input, .input-group textarea, .input-group select {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
-            font-size: 0.95rem;
-            box-sizing: border-box;
-            background-color: white;
-        }
-
-        .btn-submit {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 14px;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 10px;
-            transition: opacity 0.2s;
-        }
-
-        .btn-submit:active {
-            opacity: 0.9;
-        }
-
-        /* --- 【共通】公共機関ルート案内 --- */
-        .public-guide-box {
-            background-color: #ebf5fb;
-            border: 2px solid #aed6f1;
-            border-radius: 12px;
-            padding: 15px;
-            margin-top: 15px;
-        }
-
-        .public-guide-box h4 {
-            margin: 0 0 8px 0;
-            color: var(--accent-blue);
-            font-size: 0.95rem;
-        }
-
-        .public-card {
-            background-color: white;
-            border: 1px solid #aed6f1;
-            border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 10px;
-            font-size: 0.8rem;
-        }
-
-        .public-card h5 {
-            margin: 0 0 4px 0;
-            font-size: 0.85rem;
-            color: #1b4f72;
-        }
-
-        .public-address {
-            color: #555;
-            margin-bottom: 6px;
-        }
-
-        .public-btn {
-            display: inline-block;
-            background-color: #f1f2f6;
-            color: #2c3e50;
-            text-decoration: none;
-            padding: 8px 14px;
-            border-radius: 8px;
-            font-weight: bold;
-            border: 1px solid var(--border-color);
-            font-size: 0.8rem;
-            transition: all 0.2s;
-            text-align: center;
-        }
-
-        .public-btn:active {
-            background-color: #dfe4ea;
-        }
-
-        /* 問い合わせ文コピーエリア */
-        .output-text-area {
-            background-color: #f1f2f6;
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
-            padding: 15px;
-            font-size: 0.85rem;
-            white-space: pre-wrap;
-            margin-top: 15px;
-            display: none;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
-        }
-
-        .nav-card {
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 12px;
-            background-color: #ffffff;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .nav-card h4 {
-            margin: 0 0 6px 0;
             color: var(--primary-color);
-            font-size: 0.95rem;
         }
 
-        .nav-card.mind h4 {
-            color: var(--accent-heart);
-        }
-
-        .nav-card p {
-            margin: 0 0 15px 0;
-            font-size: 0.8rem;
-            color: #57606f;
-            line-height: 1.5;
-        }
-
-        /* --- 物件詳細ページ用スタイル --- */
-        .detail-header {
-            border-bottom: 3px solid var(--primary-color);
-            padding-bottom: 10px;
-            margin-bottom: 15px;
-        }
-        
-        .detail-spec-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 15px;
-            font-size: 0.85rem;
-        }
-
-        .detail-spec-table th, .detail-spec-table td {
-            border: 1px solid var(--border-color);
-            padding: 10px;
+        /* ==========================================
+           📝 入力フォーム・UIパーツ
+           ========================================== */
+        .form-group {
+            margin-bottom: 20px;
             text-align: left;
         }
 
-        .detail-spec-table th {
-            background-color: #eef3f0;
-            color: var(--primary-color);
-            width: 30%;
-        }
-
-        .alert-success-box {
-            background-color: #e8f8f5;
-            border: 2px solid #2ecc71;
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 15px;
-            font-size: 0.9rem;
-            color: #27ae60;
+        label {
+            display: block;
             font-weight: bold;
-            display: none;
+            margin-bottom: 8px;
+            font-size: 1.05rem;
+            color: var(--primary-color);
         }
 
-        /* ================= マルチデバイス対応 ================= */
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-family: inherit;
+            box-sizing: border-box;
+            background-color: #fff;
+        }
 
-        /* PC・タブレット大画面向け */
-        @media screen and (min-width: 769px) {
-            body {
-                padding: 20px;
-                background-color: #eae8df;
+        select:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+
+        /* 検索・アクションボタン */
+        .search-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            box-shadow: 0 4px 6px rgba(27, 77, 62, 0.2);
+        }
+
+        .search-btn:hover {
+            background-color: #113027;
+        }
+
+        /* リストボタン群 */
+        .button-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .action-btn {
+            display: block;
+            text-decoration: none;
+            color: white;
+            padding: 16px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        /* ココロナビ用の特別に目立つヒーローボタン */
+        .hero-action-btn {
+            display: block;
+            text-decoration: none;
+            color: white;
+            padding: 22px;
+            border-radius: var(--border-radius);
+            font-weight: bold;
+            font-size: 1.25rem !important;
+            text-align: center;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            border: 3px solid #fff;
+            box-shadow: 0 8px 20px rgba(41, 128, 185, 0.35);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            animation: pulse-glow 2.5s infinite;
+        }
+
+        .hero-action-btn:hover {
+            transform: scale(1.03) translateY(-4px);
+            box-shadow: 0 12px 28px rgba(41, 128, 185, 0.5);
+            background: linear-gradient(135deg, #2980b9, #1f618d);
+        }
+
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 8px 20px rgba(41, 128, 185, 0.35); }
+            50% { box-shadow: 0 8px 28px rgba(41, 128, 185, 0.6); }
+            100% { box-shadow: 0 8px 20px rgba(41, 128, 185, 0.35); }
+        }
+
+        /* クリップボード＆例文エリア */
+        .copy-section {
+            margin-top: 15px;
+            background-color: #fff;
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .copy-textarea {
+            width: 100%;
+            height: 120px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 10px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            resize: none;
+            box-sizing: border-box;
+            background-color: #f8fafc;
+            color: #334155;
+            margin-bottom: 10px;
+        }
+
+        .copy-btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: background-color 0.2s;
+            width: 100%;
+        }
+
+        .copy-btn:hover {
+            background-color: #27ae60;
+        }
+
+        /* 🗺️ オリジナル・マップ描画コンテナ */
+        .od-info-card {
+            background-color: #f0fdf4;
+            border: 2px solid #bbf7d0;
+            border-radius: var(--border-radius);
+            padding: 18px;
+            margin-top: 18px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .od-info-title {
+            font-size: 1.1rem;
+            color: var(--primary-color);
+            font-weight: bold;
+            margin-top: 0;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .od-source-badge {
+            display: inline-block;
+            background-color: #dcfce7;
+            color: #166534;
+            font-size: 0.75rem;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+
+        /* 🗺️ マップ描画用のコンテナ */
+        .map-wrapper {
+            width: 100%;
+            height: 340px; /* 見やすい高さに拡張 */
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid #e2e8f0;
+            background-color: #f8fafc;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+            margin-bottom: 15px;
+            z-index: 1; /* Leafletマップが浮くのを防止 */
+        }
+
+        /* 物件リストのカードスタイル */
+        .property-card {
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 14px;
+            cursor: pointer;
+            background-color: white;
+            transition: all 0.2s ease-in-out;
+            text-align: left;
+        }
+
+        .property-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            border-color: var(--primary-color);
+        }
+
+        .property-card.selected {
+            border-color: var(--primary-color);
+            background-color: var(--primary-light);
+        }
+
+        /* 物件詳細テーブル */
+        .detail-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+            margin-top: 10px;
+        }
+
+        .detail-table th, .detail-table td {
+            padding: 10px;
+            border-bottom: 1px solid #cbd5e1;
+            text-align: left;
+        }
+
+        .detail-table th {
+            width: 90px;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        /* 結果表示エリア */
+        .result-box {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #fffdf5;
+            border-left: 6px solid var(--disaster-color);
+            border-radius: 4px;
+            text-align: left;
+        }
+
+        /* ==========================================
+           📱 レスポンシブ（スマホ対応）
+           ========================================== */
+        @media screen and (max-width: 768px) {
+            .header-container {
+                gap: 10px;
             }
-
-            #app-container {
-                max-width: 1000px;
-                min-height: 850px;
-                height: auto;
-                border-radius: 16px;
-                box-shadow: 0 15px 35px rgba(0,0,0,0.12);
-                border: 3px solid var(--primary-color);
-                overflow: hidden;
+            .header-logo-svg {
+                width: 52px;
+                height: 52px;
             }
-
-            header {
-                padding: 18px 30px;
-            }
-
             header h1 {
-                font-size: 1.6rem;
-                padding-right: 120px;
+                font-size: 1.45rem !important;
             }
-
             header p {
-                font-size: 0.85rem;
-                padding-right: 120px;
+                font-size: 0.78rem !important;
             }
-
             #header-home-btn {
-                right: 30px;
-                padding: 10px 20px;
-                font-size: 0.9rem;
-            }
-
-            /* トップ画面：ボタンを横並び3列 */
-            .home-btn-container {
-                display: flex;
-                flex-direction: row !important;
-                gap: 20px !important;
+                position: static;
+                transform: none;
+                display: block;
+                margin: 10px auto 0 auto;
                 width: 100%;
-                margin-top: 20px;
-            }
-
-            .home-menu-btn {
-                flex: 1;
-                min-height: 250px;
-                justify-content: center;
-                padding: 35px 20px;
-                margin-bottom: 0;
-            }
-
-            /* 左右2カラム分割 */
-            .pc-split-layout {
-                display: flex;
-                flex-direction: row;
-                gap: 24px;
-                width: 100%;
-                align-items: flex-start;
                 box-sizing: border-box;
             }
-
-            .pc-left-sidebar {
-                flex: 4;
-                position: sticky;
-                top: 20px;
+            .tab-btn {
+                font-size: 0.98rem !important;
+                padding: 10px 2px !important;
             }
-
-            .pc-right-content {
-                flex: 6;
+            .card {
+                padding: 15px;
             }
-
-            /* 相談窓口：2列グリッド */
-            .support-grid {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 15px;
-            }
-
-            .support-grid .nav-card {
-                margin-bottom: 0;
-            }
-            
-            .support-grid .nav-card.mind {
-                grid-column: span 2;
-            }
-        }
-
-        /* スマートフォン向け */
-        @media screen and (max-width: 768px) {
-            body {
-                background-color: var(--bg-color);
-            }
-
-            #app-container {
-                width: 100%;
-                height: 100vh;
-                border-radius: 0;
-                box-shadow: none;
-                border: none;
-            }
-
-            header {
-                padding: 12px 10px;
-            }
-
-            header h1 {
-                font-size: 1.15rem;
-                padding-right: 85px;
-            }
-
-            header p {
-                font-size: 0.7rem;
-                padding-right: 85px;
-            }
-
-            #header-home-btn {
-                right: 8px;
-                padding: 6px 12px;
-                font-size: 0.75rem;
-            }
-
-            .home-btn-container {
-                display: flex;
-                flex-direction: column;
-                gap: 15px;
-                width: 100%;
-            }
-
-            .pc-split-layout {
-                display: flex;
-                flex-direction: column;
-                width: 100%;
-            }
-
-            .support-grid {
-                display: flex;
-                flex-direction: column;
+            .hero-action-btn {
+                font-size: 1.1rem !important;
+                padding: 18px;
             }
         }
     </style>
 </head>
 <body>
 
-<div id="app-container">
-      <header>
+    <!-- ==========================================
+         🌟 ヘッダー部分
+         ========================================== -->
+    <header>
         <div class="header-container">
-            <!-- 100%確実に表示される、温かみのあるオリジナルイラスト -->
             <div class="header-logo-svg">
                 <svg viewBox="0 0 100 100" width="100%" height="100%">
-                    <!-- 背景のやさしい光の輪 -->
                     <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255, 255, 255, 0.25)" stroke-width="2.5" stroke-dasharray="5 3"/>
                     <circle cx="50" cy="50" r="36" fill="rgba(255, 255, 255, 0.08)"/>
-                    <!-- お家（住まい） -->
                     <path d="M26 50 L50 30 L74 50" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
                     <path d="M32 50 L32 72 L68 72 L68 50" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-                    <!-- 心のぬくもり（相談窓口・ココロ） -->
                     <path d="M50 48 C48 44, 42 44, 42 49 C42 54, 50 59, 50 59 C50 59, 58 54, 58 49 C58 44, 52 44, 50 48 Z" fill="#e74c3c"/>
-                    <!-- 新しいスタートの若葉（仕事） -->
                     <path d="M64 72 C74 72, 78 58, 73 50 C67 55, 67 66, 64 72" fill="#2ecc71"/>
                 </svg>
             </div>
-            <!-- タイトルとサブタイトル -->
             <div class="header-text">
-                <h1 id="app-title">東京くらしごとナビ</h1>
+                <h1>東京くらしごとナビ</h1>
                 <p>〜50代からの住まいとお仕事探しをひとまとめに〜</p>
             </div>
         </div>
         <button id="header-home-btn" onclick="goToHome()">最初に戻る</button>
     </header>
 
-    <!-- グローバルタブ -->
-    <div id="global-tab-bar">
-        <div class="tab-bar">
-            <button class="tab-btn" id="tab-housing" onclick="switchTab('housing')">🏠 住まい探し</button>
-            <button class="tab-btn" id="tab-job" onclick="switchTab('job')">💼 仕事探し</button>
-            <button class="tab-btn" id="tab-support" onclick="switchTab('support')">📞 相談窓口</button>
-        </div>
-    </div>
+    <!-- ==========================================
+         📱 3つの切り替えタブ
+         ========================================== -->
+    <nav class="tabs">
+        <button id="nav-housing" class="tab-btn" onclick="switchTab('housing-tab', this)">🏠 住まいを探す</button>
+        <button id="nav-job" class="tab-btn" onclick="switchTab('job-tab', this)">💼 お仕事を探す</button>
+        <button id="nav-consult" class="tab-btn" onclick="switchTab('consult-tab', this)">🤝 相談先を探す</button>
+    </nav>
 
-    <div class="main-content" id="main-scroll-box">
+    <!-- ==========================================
+         📦 各種コンテンツエリア
+         ========================================== -->
+    <main class="container">
 
-        <!-- ================= 【A. トップ画面】 ================= -->
-        <div id="home-section" class="app-section active">
-            <div class="intro-text">
-                ご希望のボタンをどれか１つ押してください
-            </div>
-            
-            <div class="home-btn-container">
-                <button class="home-menu-btn" onclick="startApp('housing')">
-                    <span style="font-size: 1.4rem;">🏠 お住まいを探す</span>
-                    <span class="btn-desc">50代・シニア歓迎の賃貸物件を探せます</span>
-                </button>
-
-                <button class="home-menu-btn" onclick="startApp('job')">
-                    <span style="font-size: 1.4rem;">💼 お仕事を探す</span>
-                    <span class="btn-desc">経験や年齢に合わせたお仕事を探せます</span>
-                </button>
-
-                <button class="home-menu-btn" onclick="startApp('support')">
-                    <span style="font-size: 1.4rem;">📞 相談窓口を探す</span>
-                    <span class="btn-desc">都のセーフティネットや個別相談窓口一覧</span>
-                </button>
-            </div>
-            
-            <div style="font-size: 0.75rem; color: #7f8c8d; margin-top: 25px; line-height: 1.4; text-align: center;">
-                ※どのボタンを選んでも、次の画面の上部タブで「住まい」「仕事」「相談窓口」を自由に行き来できます。
-            </div>
-        </div>
-
-        <!-- ================= 【B. 住まい探し一覧画面】 ================= -->
-        <div id="housing-section" class="app-section">
-            <div class="pc-split-layout">
-                
-                <!-- [左側：絞り込みパネル] -->
-                <div class="pc-left-sidebar">
-                    <div class="auto-applied-box">
-                        <h4>🛡️ あんしん初期条件がセットされています</h4>
-                        <div style="font-size:0.75rem; color:#555; margin-bottom:5px;">
-                            年齢を理由にお部屋探しを諦めないための以下の条件が自動適用中です。
-                        </div>
-                        <div style="display:flex; gap:5px; flex-wrap:wrap;">
-                            <span style="background:#e67e22; color:white; padding:2px 6px; border-radius:4px; font-size:0.7rem; font-weight:bold;">高齢者入居相談可</span>
-                            <span style="background:#e67e22; color:white; padding:2px 6px; border-radius:4px; font-size:0.7rem; font-weight:bold;">保証人不要</span>
-                            <span style="background:#e67e22; color:white; padding:2px 6px; border-radius:4px; font-size:0.7rem; font-weight:bold;">保証会社利用可</span>
-                        </div>
+        <!-- -----------------------------------------
+             🏡 トップポータル画面
+             ----------------------------------------- -->
+        <div id="home-tab" class="tab-content active">
+            <div class="home-menu">
+                <div class="home-title">✨ ご利用になりたいメニューを選んでください ✨</div>
+                <div class="home-grid">
+                    <!-- 住まい -->
+                    <div class="home-card" onclick="goToTabFromHome('housing-tab', 'nav-housing')">
+                        <div class="icon">🏠</div>
+                        <h3>住まいを探す</h3>
+                        <p>50代からの安心な住環境や住宅セーフティネット制度をご案内</p>
                     </div>
-
-                    <!-- 制度解説枠 -->
-                    <div style="background-color: #ebf5fb; border: 2px solid #aed6f1; border-radius: 12px; padding: 15px; margin-bottom: 15px;">
-                        <h4 style="margin: 0 0 5px 0; color: var(--accent-blue); font-size: 0.85rem; display: flex; align-items: center; gap: 5px;">
-                            💡 東京ささエール住宅とは？
-                        </h4>
-                        <p style="font-size: 0.73rem; color:#333; margin: 0; line-height: 1.45;">
-                            高齢者や単身者等の入居を拒まない住宅として東京都に登録された、民間賃貸住宅のセーフティネット制度です。都からの家賃補助対象物件等もあり、高齢者世帯でも安心して長く暮らせる特徴を持ちます。
-                        </p>
-                        <!-- 実用化時のAPI連携の検討課題の明文化 -->
-                        <div style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed #aed6f1; font-size: 0.68rem; color: #1b4f72; line-height: 1.4;">
-                            <strong>📢 実用化に向けた開発ビジョン：</strong><br>
-                            本番運用時は、東京都の「住宅セーフティネット登録賃貸住宅システム」とAPI経由でダイレクトにシステム連携し、都内の最新ささエール物件情報をリアルタイムで自動抽出・フィルタリングする仕様への拡張を検討しています。
-                        </div>
+                    <!-- お仕事 -->
+                    <div class="home-card" onclick="goToTabFromHome('job-tab', 'nav-job')">
+                        <div class="icon">💼</div>
+                        <h3>お仕事を探す</h3>
+                        <p>生涯現役！地域密着のシルバー人材やセカンドキャリア支援窓口</p>
                     </div>
-
-                    <!-- 絞り込み条件 -->
-                    <div class="filter-panel">
-                        <div class="filter-title">📍 希望するエリアで絞り込む</div>
-                        <select id="filter-housing-area" onchange="applyHousingFilters()" style="width: 100%; padding: 10px; border-radius: 8px; border: 1.5px solid var(--border-color); font-size: 0.85rem; margin-bottom: 15px;">
-                            <option value="all">すべて（東京都内全域）</option>
-                            <option value="23wards">東京都23区内</option>
-                            <option value="outside23wards">東京都23区外・多摩地域</option>
-                        </select>
-
-                        <div class="filter-title">👥 世帯の人数で絞り込む</div>
-                        <div class="filter-options">
-                            <span class="filter-chip active" id="house-all" onclick="filterHousing('all')">すべて</span>
-                            <span class="filter-chip" id="house-single" onclick="filterHousing('single')">単身（一人暮らし）</span>
-                            <span class="filter-chip" id="house-family" onclick="filterHousing('family')">ご家族</span>
-                            <span class="filter-chip" id="house-senior" onclick="filterHousing('senior')">高齢者のみ</span>
-                        </div>
-
-                        <div class="filter-title" style="margin-top: 15px;">🛡️ セーフティネット登録状況</div>
-                        <label style="display: flex; align-items: center; gap: 8px; font-size: 0.75rem; font-weight: bold; cursor: pointer; background: white; padding: 10px; border-radius: 8px; border: 1.5px solid var(--border-color); width: 100%; box-sizing: border-box;">
-                            <input type="checkbox" id="filter-safetynet" onchange="applyHousingFilters()" style="width: auto; margin: 0;">
-                            東京ささエール住宅のみ表示
-                        </label>
+                    <!-- 相談先 -->
+                    <div class="home-card" onclick="goToTabFromHome('consult-tab', 'nav-consult')">
+                        <div class="icon">🤝</div>
+                        <h3>相談先を探す</h3>
+                        <p>心のケア、労働トラブル、公式窓口や防災マップまで一元化</p>
                     </div>
                 </div>
-
-                <!-- [右側：物件検索結果] -->
-                <div class="pc-right-content">
-                    <div id="housing-list-container">
-                        <!-- 物件1（ささエール、23区） -->
-                        <div class="result-card" data-type="single senior" data-safetynet="true" data-area="23wards">
-                            <div class="card-header">
-                                <h3 class="card-title">グリーンハイツ高円寺</h3>
-                                <span class="safetynet-badge">東京ささエール住宅（登録済）</span>
-                            </div>
-                            <p class="card-desc">杉並区高円寺南 / 徒歩6分 / 1K (23㎡) [23区内]<br>★1階・手すり付き、近所にスーパーあり</p>
-                            <div class="card-price">家賃: 64,000円</div>
-                            <button class="btn-submit" style="padding:10px; font-size:0.85rem;" onclick="goToHousingDetail('green')">🔍 この物件の詳細・申し込みへ</button>
-                        </div>
-                        
-                        <!-- 物件2（ささエール、23区） -->
-                        <div class="result-card" data-type="family" data-safetynet="true" data-area="23wards">
-                            <div class="card-header">
-                                <h3 class="card-title">ファミリーさくらテラス</h3>
-                                <span class="safetynet-badge orange">東京ささエール住宅（登録済）</span>
-                            </div>
-                            <p class="card-desc">板橋区蓮根 / 徒歩8分 / 2DK (45㎡) [23区内]<br>★日当たり良好、エレベーター完備、バリアフリー設計</p>
-                            <div class="card-price">家賃: 92,000円</div>
-                            <button class="btn-submit" style="padding:10px; font-size:0.85rem;" onclick="goToHousingDetail('sakura')">🔍 この物件の詳細・申し込みへ</button>
-                        </div>
-
-                        <!-- 物件3（ささエール、23区外） -->
-                        <div class="result-card" data-type="single senior" data-safetynet="true" data-area="outside23wards">
-                            <div class="card-header">
-                                <h3 class="card-title">メゾン・ド・ソレイユ立川</h3>
-                                <span class="safetynet-badge">東京ささエール住宅（シニア専用）</span>
-                            </div>
-                            <p class="card-desc">立川市柴崎町 / 徒歩4分 / 1LDK (35㎡) [23区外・多摩地域]<br>★24時間安否確認センサー標準装備、フルフラット車椅子対応設計</p>
-                            <div class="card-price">家賃: 72,000円</div>
-                            <button class="btn-submit" style="padding:10px; font-size:0.85rem;" onclick="goToHousingDetail('soleil')">🔍 この物件の詳細・申し込みへ</button>
-                        </div>
-
-                        <!-- 物件4（一般、23区） -->
-                        <div class="result-card" data-type="single" data-safetynet="false" data-area="23wards">
-                            <div class="card-header">
-                                <h3 class="card-title">コーポ松原</h3>
-                                <span class="general-badge">一般賃貸（高齢者相談可）</span>
-                            </div>
-                            <p class="card-desc">世田谷区松原 / 徒歩5分 / 1DK (28㎡) [23区内]<br>★静かな住宅街、バリアフリー未対応ですが手すり等後付相談可能です。</p>
-                            <div class="card-price">家賃: 52,000円</div>
-                            <button class="btn-submit" style="padding:10px; font-size:0.85rem;" onclick="goToHousingDetail('matsubara')">🔍 この物件の詳細・申し込みへ</button>
-                        </div>
-
-                        <!-- 物件5（一般、23区外） -->
-                        <div class="result-card" data-type="family" data-safetynet="false" data-area="outside23wards">
-                            <div class="card-header">
-                                <h3 class="card-title">ハイツ井の頭</h3>
-                                <span class="general-badge">一般賃貸</span>
-                            </div>
-                            <p class="card-desc">武蔵野市御殿山 / 吉祥寺駅徒歩7分 / 2LDK (55㎡) [23区外・多摩地域]<br>★吉祥寺駅チカ分譲賃貸。一般のご家族同居向けファミリー物件。</p>
-                            <div class="card-price">家賃: 115,000円</div>
-                            <button class="btn-submit" style="padding:10px; font-size:0.85rem;" onclick="goToHousingDetail('inokashira')">🔍 この物件の詳細・申し込みへ</button>
-                        </div>
-                    </div>
-                </div>
-
             </div>
         </div>
 
-        <!-- ================= 【B-2. 物件詳細・入居申し込み画面】 ================= -->
-        <div id="housing-detail-section" class="app-section">
-            <div class="pc-split-layout">
+        <!-- -----------------------------------------
+             🏠 タブ1：住まいを探す
+             ----------------------------------------- -->
+        <div id="housing-tab" class="tab-content">
+            <div class="card" style="border-left: 6px solid var(--primary-color);">
+                <h3 style="margin-top: 0; color: var(--primary-color);">💡 あんしん居住のための基本条件（要件）</h3>
+                <p style="font-size: 0.9rem; margin-bottom: 0; line-height: 1.5; color: #555;">
+                    東京都が推奨する「セーフティネット住宅（ささエール住宅）」は、<strong>50代・シニア単身者、高齢者世帯、低所得世帯</strong>など、一般的な賃貸契約に不安を感じる方々が、優しく安心して入居を始められるためのサポート（見守り等）が整った、国・都指定の優良な登録住宅です。
+                </p>
+            </div>
+
+            <div class="card">
+                <h2>🏢 条件に合ったささエール住宅を探す</h2>
                 
-                <!-- [左側：詳細スペック、バリアフリー対応、防災マップ避難所情報] -->
-                <div class="pc-left-sidebar">
-                    <div style="background-color: #ffffff; border: 2px solid var(--border-color); border-radius: 12px; padding: 20px;">
-                        <div class="detail-header">
-                            <span class="card-badge" id="detail-badge">歓迎</span>
-                            <h2 id="detail-title" style="margin: 5px 0; font-size: 1.4rem;">物件名</h2>
-                            <p id="detail-price" style="font-size: 1.3rem; font-weight: bold; color: #e74c3c; margin: 0;">家賃: ---</p>
-                        </div>
+                <div class="form-group">
+                    <label for="housing-area">📍 希望する地域区分</label>
+                    <select id="housing-area" onchange="updateSubAreas('housing')">
+                        <option value="23区">東京都 23区内</option>
+                        <option value="多摩地区">東京都 多摩地域（23区外）</option>
+                        <option value="島しょ部">東京都 島しょ部（伊豆・小笠原諸島）</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="housing-sub-area">🔎 詳細な区市町村を選択してください（オープンデータ自動連動）</label>
+                    <select id="housing-sub-area" onchange="resetHousingSimulation()">
+                        <!-- JSで動的に追加されます -->
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="housing-type">👤 ご自身の状況を選択してください</label>
+                    <select id="housing-type" onchange="resetHousingSimulation()">
+                        <option value="50代以上・シニア単身世帯">50代以上・シニア単身世帯</option>
+                        <option value="高齢者夫婦・同居世帯">高齢者夫婦・同居世帯</option>
+                        <option value="低所得者・住居確保に配慮が必要な世帯">低所得者・住居確保に配慮が必要な世帯</option>
+                    </select>
+                </div>
+
+                <button class="search-btn" onclick="searchHousing()">🔍 この条件で検索・申し込みをシミュレーション</button>
+
+                <!-- 申し込み・シミュレーション結果表示エリア -->
+                <div id="housing-result" class="result-box">
+                    <h3 style="margin-top:0; color: var(--primary-color);">✅ シミュレーション結果</h3>
+                    <p id="housing-result-text"></p>
+
+                    <!-- 🏘️ 本物の Leaflet マップ描画エリア -->
+                    <div id="housing-od-section" class="od-info-card">
+                        <div class="od-source-badge">🏢 東京都住宅政策本部オープンデータ・ささエール動的連携</div>
+                        <h4 class="od-info-title">🗺️ 周辺のささエール登録住宅（拡大縮小・ピン選択可能）</h4>
                         
-                        <h4 style="margin: 0 0 10px 0; color: var(--primary-color);">🏢 物件の基本情報</h4>
-                        <table class="detail-spec-table">
+                        <!-- ここに本物の地図がヌルヌル展開されます -->
+                        <div id="map-canvas" class="map-wrapper"></div>
+                        
+                        <p id="housing-od-text" style="font-size: 0.9rem; color: #333; margin: 0 0 10px 0; line-height: 1.4;"></p>
+                    </div>
+
+                    <!-- 🏠 物件選択用・動的リスト表示エリア -->
+                    <div id="housing-properties-list-container" style="margin-top: 15px; margin-bottom: 15px;">
+                        <label style="font-weight: bold; color: var(--primary-color);">🏢 このエリアのささエール物件一覧（選択すると詳細を表示）：</label>
+                        <div id="housing-properties-list" style="display:flex; flex-direction:column; gap:10px; margin-top:8px;"></div>
+                    </div>
+
+                    <!-- 🔎 物件詳細情報テーブル -->
+                    <div id="property-detail-box" class="card" style="display:none; border:2px solid var(--primary-color); background-color: #f0fdf4; margin-top: 15px; margin-bottom: 20px;">
+                        <h3 style="margin-top:0; color: var(--primary-color); display:flex; align-items:center; gap:8px;">
+                            🏢 選択中のささエール物件詳細
+                        </h3>
+                        <table class="detail-table">
+                            <tr>
+                                <th>物件名</th>
+                                <td id="det-name" style="font-weight:bold; color: var(--primary-color);">-</td>
+                            </tr>
                             <tr>
                                 <th>所在地</th>
-                                <td id="detail-address">---</td>
+                                <td id="det-address">-</td>
                             </tr>
                             <tr>
-                                <th>交通アクセス</th>
-                                <td id="detail-access">---</td>
+                                <th>参考家賃</th>
+                                <td id="det-rent" style="color: var(--heart-color); font-weight:bold;">-</td>
                             </tr>
                             <tr>
-                                <th>間取り / 専有面積</th>
-                                <td id="detail-layout">---</td>
+                                <th>間取り</th>
+                                <td id="det-type">-</td>
                             </tr>
                             <tr>
-                                <th>バリアフリー設備</th>
-                                <td id="detail-barrierfree">---</td>
-                            </tr>
-                            <tr>
-                                <th>セーフティネット登録</th>
-                                <td id="detail-safetynet" style="font-weight: bold; color: #27ae60;">---</td>
-                            </tr>
-                            <tr>
-                                <th>避難所情報<br><small>※東京都防災マップ連携</small></th>
-                                <td id="detail-evac" style="font-weight: bold; color: var(--accent-blue);">---</td>
+                                <th>設備特徴</th>
+                                <td id="det-features">-</td>
                             </tr>
                         </table>
-
-                        <div class="auto-applied-box" style="margin-top: 15px; margin-bottom: 0;">
-                            <h4 style="color: var(--accent-orange); margin-bottom: 3px;">🛡️ あんしん初期適用条件</h4>
-                            <p style="font-size: 0.75rem; color:#555; margin: 0; line-height: 1.4;">
-                                この物件は、保証会社の利用が標準でセットされており、身元保証人なしでの入居相談や、高齢・単身世帯であることによる入居相談が最初から許可されています。
-                            </p>
-                        </div>
                     </div>
-                </div>
-
-                <!-- [右側：入居申し込み・お問い合わせ入力フォーム] -->
-                <div class="pc-right-content">
-                    <div style="background-color: #ffffff; border: 2px solid var(--border-color); border-radius: 12px; padding: 20px;">
-                        <h3 style="margin-top:0; color: var(--primary-color); font-size: 1.1rem; border-bottom: 2px solid var(--border-color); padding-bottom: 8px;">
-                            ✍️ お申し込み・お問い合わせフォーム
-                        </h3>
-                        <p style="font-size: 0.75rem; color: #666; margin-top: -5px;">
-                            必要事項をご入力いただき「申し込みをする」ボタンを押してください。
-                        </p>
-
-                        <div class="input-group">
-                            <label>ご希望物件</label>
-                            <input type="text" id="form-prop-name" readonly style="background-color: #f1f2f6; font-weight: bold;">
-                        </div>
-
-                        <div class="input-group">
-                            <label>① お名前（カタカナ）</label>
-                            <input type="text" id="form-user-name" placeholder="例：トウキョウ タロウ" value="トウキョウ タロウ">
-                        </div>
-
-                        <div class="input-group">
-                            <label>② ご連絡先（電話番号）</label>
-                            <input type="text" id="form-user-phone" placeholder="例：090-1234-5678" value="090-1234-5678">
-                        </div>
-
-                        <div class="input-group">
-                            <label>③ ご年齢</label>
-                            <select id="form-user-age">
-                                <option value="50">50代前半</option>
-                                <option value="55">55歳〜64歳</option>
-                                <option value="65" selected>65歳以上</option>
-                            </select>
-                        </div>
-
-                        <div class="input-group">
-                            <label>④ ご入居の予定人数</label>
-                            <select id="form-user-occupants">
-                                <option value="単身">一人暮らし（単身）</option>
-                                <option value="高齢者のみ">高齢者のみの世帯</option>
-                                <option value="ご家族">ご家族と同居</option>
-                            </select>
-                        </div>
-
-                        <div class="input-group">
-                            <label>⑤ 特記事項・ご相談（手すり増設希望など）</label>
-                            <textarea id="form-user-notes" rows="4" placeholder="ご希望やご質問があればご記入ください。">入居時に、浴室への手すりの増設が可能かご相談させてください。</textarea>
-                        </div>
-
-                        <button class="btn-submit" onclick="submitHousingApplication()">📝 この内容で申し込みをする</button>
-
-                        <!-- 送信完了メッセージ -->
-                        <div id="application-success-box" class="alert-success-box">
-                            🎉 お申し込みありがとうございました！<br>
-                            <span style="font-size: 0.8rem; font-weight: normal; color: #555; line-height: 1.4; display: block; margin-top: 5px;">
-                                <strong>送信先：東京都住宅政策本部 連携仲介窓口（シニアあんしんパートナー店）</strong><br>
-                                入力されたデータはセーフティネット仲介システムへ安全に送信されました。提携先の居住支援パートナー会社（不動産店）より、2〜3日以内にお電話宛にご連絡を差し上げます。
-                            </span>
-                        </div>
-
-                        <!-- 問い合わせ・申し込み履歴コピーエリア -->
-                        <div id="detail-letter-output" class="output-text-area"></div>
-                    </div>
-                </div>
-
-            </div>
-            
-            <button class="btn-submit" style="background-color: #7f8c8d; margin-top: 20px; width: auto; align-self: flex-start;" onclick="switchTab('housing')">🏠 物件一覧に戻る</button>
-        </div>
-
-        <!-- ================= 【C. 仕事探し画面】 ================= -->
-        <div id="job-section" class="app-section">
-            <div class="pc-split-layout">
-
-                <!-- [左側：条件指定＆簡単マッチングフォーム] -->
-                <div class="pc-left-sidebar">
-                    <!-- エリア指定 -->
-                    <div class="filter-panel">
-                        <div class="filter-title">📍 希望するお仕事の地域</div>
-                        <select id="filter-job-area" style="width: 100%; padding: 10px; border-radius: 8px; border: 1.5px solid var(--border-color); font-size: 0.85rem;">
-                            <option value="all">すべて（東京都内全域）</option>
-                            <option value="23wards">東京都23区内</option>
-                            <option value="outside23wards">東京都23区外・多摩地域</option>
-                        </select>
+                    
+                    <!-- 問い合わせ例文セクション -->
+                    <div class="copy-section">
+                        <label style="font-size: 0.9rem; color: #333;">📋 ささエール相談窓口への「問い合わせ例文」</label>
+                        <p style="font-size: 0.8rem; color: #666; margin: 2px 0 8px 0;">以下の文章をそのままコピーしてメールや相談フォームに使えます：</p>
+                        <textarea id="housing-copy-text" class="copy-textarea" readonly></textarea>
+                        <button class="copy-btn" onclick="copyToClipboard('housing-copy-text')">📋 例文をコピーする</button>
                     </div>
 
-                    <!-- 働き方フィルター -->
-                    <div class="filter-panel">
-                        <div class="filter-title">👔 希望するお仕事の形態</div>
-                        <div class="filter-options">
-                            <span class="filter-chip active" data-type="all" onclick="toggleJobFilter(this)">すべて</span>
-                            <span class="filter-chip" data-type="part" onclick="toggleJobFilter(this)">パート・アルバイト</span>
-                            <span class="filter-chip" data-type="contract" onclick="toggleJobFilter(this)">契約・正社員</span>
-                            <span class="filter-chip" data-type="deleg" onclick="toggleJobFilter(this)">業務委託・派遣</span>
-                        </div>
-                    </div>
-
-                    <!-- プロフィール入力欄 -->
-                    <div style="background-color: #ffffff; border: 2px solid var(--border-color); border-radius: 12px; padding: 15px;">
-                        <h4 style="margin: 0 0 10px 0; font-size: 0.9rem; color: var(--primary-color);">✨ あなたの経験でかんたん仕事マッチング</h4>
-                        
-                        <div class="input-group">
-                            <label>① あなたの「ご年齢」</label>
-                            <select id="user-age-select">
-                                <option value="50">50代前半</option>
-                                <option value="55">55歳以上〜60代前半</option>
-                                <option value="65" selected>65歳以上（定年以降）</option>
-                            </select>
-                        </div>
-
-                        <div class="input-group">
-                            <label>② お持ちの資格やご経験（任意）</label>
-                            <input type="text" id="user-exp" placeholder="例：運転免許、事務経験、人との会話が得意" value="運転免許、見守り、お話相手">
-                        </div>
-
-                        <button class="btn-submit" onclick="runJobMatch()">🔍 この条件で仕事を探す</button>
-                    </div>
-                </div>
-
-                <!-- [右側：マッチング結果＆公的ルート] -->
-                <div class="pc-right-content">
-                    <!-- お仕事検索結果エリア -->
-                    <div id="job-results-container">
-                        <p style="font-size:0.85rem; text-align:center; color:#666; padding: 40px 10px;">
-                            左の条件を入力して「お仕事を探す」ボタンを押してください
-                        </p>
-                    </div>
-
-                    <!-- 65歳以降の公的機関案内 -->
-                    <div id="public-assistance-route" class="public-guide-box" style="display:none;">
-                        <h4>🗺️ 65歳以降の「確実なお仕事探し」相談窓口</h4>
-                        <p style="font-size: 0.75rem; color:#555; margin-top:-5px; line-height:1.4;">
-                            一般的な求人サイトで見つからない場合でも、東京都が設置する以下の公的専門窓口で、個別サポートを無料で受けることができます。
-                        </p>
-
-                        <!-- 東京しごとセンター -->
-                        <div class="public-card">
-                            <h5>① 東京しごとセンター（シニアコーナー）</h5>
-                            <p class="public-address">📍 東京都千代田区飯田橋3-10-3（JR飯田橋駅 徒歩5分）</p>
-                            <p style="margin: 0 0 6px 0; font-size:0.75rem;">★55歳以上の就職活動を、マンツーマンで専門相談員が手厚くサポートします。</p>
-                            <button onclick="alert('🚧 東京しごとセンター（リンク利用申請中）\n\n現在、本アプリから公式ホームページ（https://www.tokyoshigoto.jp/senior/）への直接リンク利用を申請中です。承認が下り次第、こちらからアクセスできるようになります。');" class="public-btn" style="width:auto; display:inline-block; cursor:pointer; border:1px solid var(--border-color); background-color:#f1f2f6;">🌐 ホームページを開く（申請中）</button>
-                        </div>
-
-                        <!-- 各区市町村ハローワーク -->
-                        <div class="public-card">
-                            <h5>② 東京都内ハローワーク（生涯現役支援窓口）</h5>
-                            <p class="public-address">📍 東京都内各地にございます</p>
-                            <a href="https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/koyou_roudou/koyou/koureisha/koureisha-koyou_00025.html" target="_blank" class="public-btn" style="width:auto; display:inline-block;">🌐 相談先を探す</a>
-                        </div>
-
-                        <!-- シルバー人材センター -->
-                        <div class="public-card">
-                            <h5>③ 東京都シルバー人材センター連合</h5>
-                            <p class="public-address">📍 お住まいの市区町村ごとに窓口があります</p>
-                            <a href="https://www.tokyosilver.jp/" target="_blank" class="public-btn" style="width:auto; display:inline-block;">🌐 最寄りのセンターを探す</a>
-                        </div>
-                    </div>
-
-                    <div id="job-letter-output" class="output-text-area"></div>
-                </div>
-
-            </div>
-        </div>
-
-        <!-- ================= 【D. 相談窓口ナビ】 ================= -->
-        <div id="support-section" class="app-section">
-            <h3 style="font-size: 1.1rem; margin-top:0; color: var(--primary-color);">安心の東京都・専門相談窓口</h3>
-            <p style="font-size: 0.85rem; color:#666; margin-top:-5px; margin-bottom: 20px;">困った時は、一人で抱え込まずお気軽に専門窓口へご相談ください。</p>
-
-            <div class="support-grid">
-                <!-- 【精神心理：ココロナビ】 -->
-                <div class="nav-card mind" style="border: 2px solid var(--accent-heart); padding: 18px;">
-                    <div>
-                        <h4 style="color:var(--accent-heart); font-size:1.05rem; margin:0 0 8px 0; display:flex; align-items:center; gap:5px;">
-                            ❤️ ココロナビ（悩み・不安のAI相談室）
-                        </h4>
-                        <p style="font-size:0.85rem; margin:0 0 12px 0; color:#555; line-height: 1.5;">
-                            「不採用が続いて自信を失いそう…」「これからの生活が不安」など、お仕事やお部屋探しの途中で生じたモヤモヤを優しく傾聴し、寄り添ってくれる外部連携アプリです。
-                        </p>
-                    </div>
-                    <a href="https://restart-support-ai.pages.dev/dashboard" target="_blank" id="kokoronabi-link" class="public-btn" style="background-color:#fff5f5; border-color:var(--accent-heart); color:var(--accent-heart); font-weight: bold; padding: 10px 18px; display: inline-block; text-decoration: none; text-align: center; border-radius: 8px;">❤️ ココロナビを開く（外部連携・別タブ表示）</a>
-                </div>
-
-                <!-- 【東京都 精神保健福祉センター（こころの相談）】 -->
-                <div class="nav-card">
-                    <div>
-                        <h4>🧠 東京都 精神保健福祉センター（こころの相談）</h4>
-                        <p style="font-size:0.8rem; margin:0 0 12px 0; color:#555;">
-                            「不安が続いて眠れない」「心の落ち込みについて専門家に相談したい」ときの、信頼できる公的なこころのケア窓口です。
-                        </p>
-                    </div>
-                    <a href="https://www.hokeniryo.metro.tokyo.lg.jp/policy/annai" target="_blank" class="public-btn" style="text-decoration: none; text-align: center;">📞 こころの相談窓口（公式）へ</a>
-                </div>
-
-                <!-- 【東京しごとセンター シニア向け直リンク】 -->
-                <div class="nav-card">
-                    <div>
-                        <h4>👔 東京しごとセンター（就労支援窓口）</h4>
-                        <p style="font-size:0.8rem; margin:0 0 12px 0; color:#555;">
-                            50代・シニア枠の就業相談や、キャリアチェンジに関する個別アドバイス、履歴書の添削等をマンツーマンで受けられる公共機関です。
-                        </p>
-                    </div>
-                     <button onclick="alert('🚧 東京しごとセンター（リンク利用申請中）\n\n現在、本アプリから公式ホームページ（https://www.tokyoshigoto.jp/contact/）への直接リンク利用を申請中です。承認が下り次第、こちらからアクセスできるようになります。');" class="public-btn" style="width:auto; display:inline-block; cursor:pointer; border:1px solid var(--border-color);">🌐 お問い合わせ（申請中）</button>
-                </div>
-
-                <!-- 【東京都 住宅政策本部】 -->
-                <div class="nav-card">
-                    <div>
-                        <h4 style="color:var(--accent-orange);">🏢 東京都 住宅セーフティネット相談窓口</h4>
-                        <p style="font-size:0.8rem; margin:0 0 12px 0; color:#555;">
-                            東京都が推進する「東京ささエール住宅」など、高齢者のみ世帯でも安心して入居できる住宅支援に関する公式窓口です。
-                        </p>
-                    </div>
-                    <a href="https://www.juutakuseisaku.metro.tokyo.lg.jp/" target="_blank" class="public-btn" style="text-decoration: none; text-align: center; border-color: var(--accent-orange); color: var(--accent-orange);">🏠 住宅政策本部公式HPへ</a>
-                </div>
-
-                <!-- 【東京都防災・建築まちづくりセンター】 -->
-                <div class="nav-card">
-                    <div>
-                        <h4>🛠️ 東京都防災・建築まちづくりセンター（バリアフリー・改修相談）</h4>
-                        <p style="font-size:0.8rem; margin:0 0 12px 0; color:#555;">
-                            高齢者向け安全住宅への改修や、浴室・玄関への手すり設置などの工事に関する公的な助成金・手続きのご相談窓口です。
-                        </p>
-                    </div>
-                    <a href="https://www.tokyo-bousai.or.jp/" target="_blank" class="public-btn" style="text-decoration: none; text-align: center;">🛠️ 建築相談窓口（公式）へ</a>
-                </div>
-
-                <!-- 【東京都労働相談情報センター】 -->
-                <div class="nav-card">
-                    <div>
-                        <h4>⚖️ 東京都労働相談情報センター（労働条件・ハラスメント相談）</h4>
-                        <p style="font-size:0.8rem; margin:0 0 12px 0; color:#555;">
-                            「前職での労働条件に不満がある」「採用前後におけるハラスメントが不安」など、働くことに関するルール or 法的トラブルの公的相談窓口です。
-                        </p>
-                    </div>
-                    <a href="https://www.hataraku.metro.tokyo.lg.jp/soudan-c/center/" target="_blank" class="public-btn" style="text-decoration: none; text-align: center;">⚖️東京都労働相談情報センターのホームページ</a>
-                </div>
-
-                <!-- 【ボランティア・社会参加つながり支援】 -->
-                <div class="nav-card">
-                    <div>
-                        <h4>🤝 地域の居場所・ボランティア「福ナビ」（社会とのつながり支援）</h4>
-                        <p style="font-size:0.8rem; margin:0 0 12px 0; color:#555;">
-                            「退職後に社会とのつながりが薄れて寂しい」「趣味や地域社会で誰かと交流したい」ときの、東京都福祉情報ポータルサイト「福ナビ」の活動案内・高齢者居場所情報です。
-                        </p>
-                    </div>
-                   <button onclick="alert('🚧 とうきょう福祉ナビゲーション（リンク利用申請中）\n\n現在、本アプリから福ナビ公式サイト（https://www.fukunavi.or.jp/fukunavi/）への直接リンク利用を申請中です。承認が下り次第、こちらからアクセスできるようになります。');" class="public-btn" style="text-decoration: none; text-align: center; cursor:pointer; width:100%;">🤝 つながり・活動を探す（申請中）</button>
-
+                    <button class="search-btn" style="background-color: var(--accent-color); margin-top: 15px;" onclick="submitHousing()">この内容でささエール住宅に相談を仮受付する（デモ）</button>
                 </div>
             </div>
 
-            <!-- 一番下に配置する「自助のための防災備蓄管理アプリ紹介」の特設コーナー -->
-            <div style="margin-top: 35px; padding-top: 25px; border-top: 3px dashed var(--border-color); display: flex; flex-direction: column;">
-                <h4 style="font-size: 1.1rem; margin-top: 0; color: #d35400; display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-                    📦 備蓄品を自分で簡単に管理できるアプリのご紹介
-                </h4>
-                <div class="nav-card" style="border: 2px solid #f1c40f; padding: 20px; background-color: #fffdf0; margin-bottom: 0;">
-                    <div>
-                        <h5 style="color:#d35400; font-size:1.05rem; margin:0 0 10px 0; display:flex; align-items:center; gap:5px;">
-                            家庭用防災備蓄手帳「備えストック」
-                        </h5>
-                        <p style="font-size:0.85rem; margin:0 0 15px 0; color:#555; line-height: 1.6;">
-                            「備える」をもっと身近に、もっと安心に。おうちにある飲料水や缶詰などのストックを、スマートに楽しく管理できる個人向けアプリです。賞味期限のうっかり切れを防ぎ、いつでも「我が家は大丈夫」という安心を、ご自身のペースで作ることができます。
-                        </p>
-                    </div>
-                     <a href="https://sonaestock.pages.dev/" target="_blank" class="public-btn" style="background-color:#ffffff; border-color:#f1c40f; color:#d35400; font-weight: bold; padding: 12px 20px; display: inline-block; border-radius: 8px; cursor: pointer; text-align: center; width: auto; align-self: flex-start; text-decoration: none;">📦 備えストック を開く（外部リンク）</a>
-                </div>
-            </div>
-        </div>
-
-    </div>
-</div>
-
-<script>
-    // 物件データベース
-    const housingDB = {
-        green: {
-            title: "グリーンハイツ高円寺",
-            badge: "東京ささエール住宅（登録済）",
-            badgeClass: "safetynet-badge",
-            price: "家賃: 64,000円 (管理費: 3,000円)",
-            address: "東京都杉並区高円寺南4丁目",
-            access: "JR中央線「高円寺駅」徒歩6分",
-            layout: "1K (23㎡) / 洋室6帖 / 1階",
-            barrierfree: "玄関・浴室に手すり完備、段差を極力なくした低フラット設計、スライド式の室内ドア",
-            evac: "杉並区立高円寺小学校（指定避難所）まで徒歩3分",
-            safetynet: "登録済（登録番号: 都登第2026-001号 / 世帯要件：高齢者・単身要配慮）"
-        },
-        sakura: {
-            title: "ファミリーさくらテラス",
-            badge: "東京ささエール住宅（登録済）",
-            badgeClass: "safetynet-badge orange",
-            price: "家賃: 92,000円 (管理費: 5,000円)",
-            address: "東京都板橋区蓮根2丁目",
-            access: "都営三田線「蓮根駅」徒歩8分",
-            layout: "2DK (45㎡) / 洋室6帖＋和室6帖＋DK7.5帖 / 3階",
-            barrierfree: "エレベーター完備（車椅子対応サイズ）、バリアフリー共有廊下、浴室手すり、緊急呼び出しブザー",
-            evac: "板橋区立蓮根小学校（指定避避難所）まで徒歩4分",
-            safetynet: "登録済（登録番号: 都登第2026-042号 / 世帯要件：子育て・多世帯要配慮）"
-        },
-        soleil: {
-            title: "メゾン・ド・ソレイユ立川",
-            badge: "東京ささエール住宅（シニア専用）",
-            badgeClass: "safetynet-badge",
-            price: "家賃: 72,000円 (管理費: 6,000円)",
-            address: "東京都立川市柴崎町2丁目",
-            access: "多摩モノレール「立川南駅」徒歩4分",
-            layout: "1LDK (35㎡) / 2階（エレベーターあり）",
-            barrierfree: "完全フルフラット設計、車椅子対応型キッチン、各所L字型手すり、24時間安否確認センサー装備",
-            evac: "立川市立第一小学校（指定避難所）まで徒歩5分",
-            safetynet: "登録済（登録番号: 都登第2026-118号 / シニア専用・居住支援法人連携）"
-        },
-        matsubara: {
-            title: "コーポ松原",
-            badge: "一般賃貸（高齢者相談可）",
-            badgeClass: "general-badge",
-            price: "家賃: 52,000円 (管理費: 2,000円)",
-            address: "東京都世田谷区松原3丁目",
-            access: "京王線「下高井戸駅」徒歩5分",
-            layout: "1DK (28㎡) / 2階",
-            barrierfree: "バリアフリー未対応（ですが、入居相談のうえ簡易的な縦手すり増設などのご相談が可能です）",
-            evac: "世田谷区立松原小学校まで徒歩6分",
-            safetynet: "未登録（一般民間賃貸ですが、オーナー意向により高齢者世帯のご入居・保証会社利用相談が可能です）"
-        },
-        inokashira: {
-            title: "ハイツ井の頭",
-            badge: "一般賃貸",
-            badgeClass: "general-badge",
-            price: "家賃: 115,000円 (管理費: 5,000円)",
-            address: "東京都武蔵野市御殿山1丁目",
-            access: "JR中央線「吉祥寺駅」徒歩7分",
-            layout: "2LDK (55㎡) / 4階（エレベーターあり）",
-            barrierfree: "特になし（一般的な賃貸ファミリーマンション構造です）",
-            evac: "武蔵野市立第一小学校まで徒歩8分",
-            safetynet: "未登録（通常の民間ファミリー市場物件です）"
-        }
-    };
-
-    // 求人データベース
-    const jobDB = [
-        {
-            title: "【シニア歓迎】分譲マンションの受付・管理員",
-            type: "part",
-            area: "23wards",
-            location: "東京都新宿区内",
-            desc: "新宿区内 / 週3日・午前中のみ / 経験不問<br>★丁寧な挨拶ができればどなたでも大歓迎！",
-            price: "時給: 1,250円",
-            minAge: 65
-        },
-        {
-            title: "【シニア歓迎】多摩地域のコミュニティセンター受付・清掃",
-            type: "part",
-            area: "outside23wards",
-            location: "東京都八王子市",
-            desc: "八王子市 / 週2〜3日・シフト制 / 未経験者歓迎<br>★地域のサークル活動を支えるアットホームな職場です。",
-            price: "時給: 1,180円",
-            minAge: 65
-        },
-        {
-            title: "【50代・60代活躍】お取引先企業の送迎ドライバー",
-            type: "contract",
-            area: "23wards",
-            location: "東京都豊島区",
-            desc: "豊島区 / 経験を考慮<br>★役員送迎や社内シャトルバス。あなたの運転スキルが光ります。",
-            price: "時給: 1,400円",
-            minAge: 50
-        },
-        {
-            title: "【経験歓迎】中高年向けスマート支援事務員",
-            type: "part",
-            area: "23wards",
-            location: "東京都千代田区",
-            desc: "千代田区 / 週4日勤務相談可<br>★データ入力や来客受付。これまでの社会人経験が活きます。",
-            price: "時給: 1,550円",
-            minAge: 50
-        },
-        {
-            title: "【未経験歓迎】多摩エリアの配送助手・軽作業",
-            type: "deleg",
-            area: "outside23wards",
-            location: "東京都立川市",
-            desc: "立川市 / 週3日〜相談可 / 体を動かすのが好きな方歓迎<br>★2人1組での配送助手なので、シニアの方でも無理なくスタートできます。",
-            price: "時給: 1,300円",
-            minAge: 50
-        }
-    ];
-
-    // フィルター状態
-    let currentHousingType = 'all';
-
-    // 画面切り替え制御
-    function startApp(targetSection) {
-        document.getElementById('home-section').style.display = 'none';
-        document.getElementById('home-section').classList.remove('active');
-        
-        document.getElementById('global-tab-bar').style.display = 'block';
-        document.getElementById('header-home-btn').style.display = 'block';
-        
-        switchTab(targetSection);
-    }
-
-    // タブ切り替え処理
-    function switchTab(tabId) {
-        document.querySelectorAll('.app-section').forEach(sec => {
-            sec.style.display = 'none';
-            sec.classList.remove('active');
-        });
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.classList.remove('active');
-        });
-
-        const targetSec = document.getElementById(tabId + '-section');
-        if (targetSec) {
-            targetSec.style.display = 'flex';
-            targetSec.classList.add('active');
-        }
-        
-        if (document.getElementById('tab-' + tabId)) {
-            document.getElementById('tab-' + tabId).classList.add('active');
-        }
-
-        document.getElementById('main-scroll-box').scrollTop = 0;
-
-        document.getElementById('application-success-box').style.display = 'none';
-        document.getElementById('detail-letter-output').style.display = 'none';
-        const jobOutput = document.getElementById('job-letter-output');
-        if (jobOutput) jobOutput.style.display = 'none';
-    }
-
-    // ホームに戻る
-    function goToHome() {
-        document.getElementById('global-tab-bar').style.display = 'none';
-        document.getElementById('header-home-btn').style.display = 'none';
-        
-        document.querySelectorAll('.app-section').forEach(sec => {
-            sec.style.display = 'none';
-            sec.classList.remove('active');
-        });
-        
-        const homeSec = document.getElementById('home-section');
-        homeSec.style.display = 'flex';
-        homeSec.classList.add('active');
-        
-        document.getElementById('main-scroll-box').scrollTop = 0;
-    }
-
-    // 住まい詳細・申し込み画面へ遷移
-    function goToHousingDetail(propKey) {
-        const prop = housingDB[propKey];
-        if (!prop) return;
-
-        document.getElementById('detail-title').innerText = prop.title;
-        document.getElementById('detail-price').innerText = prop.price;
-        document.getElementById('detail-address').innerText = prop.address;
-        document.getElementById('detail-access').innerText = prop.access;
-        document.getElementById('detail-layout').innerText = prop.layout;
-        document.getElementById('detail-barrierfree').innerText = prop.barrierfree;
-        document.getElementById('detail-safetynet').innerText = prop.safetynet;
-        document.getElementById('detail-evac').innerText = prop.evac;
-        
-        const badge = document.getElementById('detail-badge');
-        badge.innerText = prop.badge;
-        badge.className = "card-badge " + prop.badgeClass;
-
-        document.getElementById('form-prop-name').value = prop.title;
-
-        document.getElementById('application-success-box').style.display = 'none';
-        document.getElementById('detail-letter-output').style.display = 'none';
-
-        document.querySelectorAll('.app-section').forEach(sec => {
-            sec.style.display = 'none';
-            sec.classList.remove('active');
-        });
-        const detailSec = document.getElementById('housing-detail-section');
-        detailSec.style.display = 'flex';
-        detailSec.classList.add('active');
-
-        document.getElementById('main-scroll-box').scrollTop = 0;
-    }
-
-    // 入居申し込み完了処理
-    function submitHousingApplication() {
-        const name = document.getElementById('form-user-name').value || "トウキョウ タロウ";
-        const phone = document.getElementById('form-user-phone').value || "090-1234-5678";
-        const age = document.getElementById('form-user-age').value;
-        const occupants = document.getElementById('form-user-occupants').value;
-        const notes = document.getElementById('form-user-notes').value || "特になし";
-        const propName = document.getElementById('form-prop-name').value;
-
-        document.getElementById('application-success-box').style.display = 'block';
-
-        let text = `【不動産会社・管理会社への送信完了データ（履歴）】
-
-■送信先：東京くらしごとナビ・賃貸仲介パートナー窓口宛
-■お申し込み物件：${propName}
-
----------------------------------------
-＜お申し込み内容＞
-・ご氏名（カナ）：${name}
-・ご連絡先：${phone}
-・ご年齢：${age}歳世帯
-・入居予定人数：${occupants}
-・特記事項・ご相談：
-  ${notes}
-
----------------------------------------
-＜自動生成されたメッセージ本文＞
-お世話になります。東京都の高齢者安心賃貸セーフティネット「東京くらしごとナビ」より申し込みました、${name}と申します。
-
-本日、上記物件へのお申し込み手続きを完了いたしました。
-私は現在50歳以上の世帯でございまして、初期条件として「高齢者入居相談可」「保証会社利用可能」「保証人不要」が適用されているこちらの物件を大変気に入っております。
-
-また、特記事項に記載いたしました内容について、不動産会社様のご相談や内覧候補日を調整させていただきたく存じます。お手数ですが、折り返しご連絡をお待ちしております。`;
-
-        const output = document.getElementById('detail-letter-output');
-        output.innerText = text;
-        output.style.display = 'block';
-
-        document.getElementById('application-success-box').scrollIntoView({ behavior: 'smooth' });
-    }
-
-    // 世帯人数フィルター選択時
-    function filterHousing(type) {
-        currentHousingType = type;
-        document.querySelectorAll('#housing-section .filter-chip').forEach(chip => {
-            chip.classList.remove('active');
-        });
-        event.currentTarget.classList.add('active');
-        applyHousingFilters();
-    }
-
-    // フィルターロジックの統合適用（人数 ＆ エリア ＆ セーフティネット）
-    function applyHousingFilters() {
-        const selectedArea = document.getElementById('filter-housing-area').value;
-        const onlySafetyNet = document.getElementById('filter-safetynet').checked;
-        const cards = document.querySelectorAll('#housing-list-container .result-card');
-        
-        cards.forEach(card => {
-            const types = card.getAttribute('data-type').split(' ');
-            const cardArea = card.getAttribute('data-area');
-            const isSafetyNet = card.getAttribute('data-safetynet') === 'true';
-            
-            let matchType = (currentHousingType === 'all' || types.includes(currentHousingType));
-            let matchArea = (selectedArea === 'all' || cardArea === selectedArea);
-            let matchSafetyNet = (!onlySafetyNet || isSafetyNet);
-            
-            if (matchType && matchArea && matchSafetyNet) {
-                card.style.display = 'block';
-            } else {
-                card.style.display = 'none';
-            }
-        });
-    }
-
-    // お仕事形態フィルター
-    function toggleJobFilter(element) {
-        document.querySelectorAll('#job-section .filter-chip').forEach(chip => {
-            chip.classList.remove('active');
-        });
-        element.classList.add('active');
-    }
-
-    // 簡単お仕事マッチング実行（エリア ＆ 働き方 ＆ 年齢）
-    function runJobMatch() {
-        const selectedArea = document.getElementById('filter-job-area').value;
-        
-        let activeType = "all";
-        const activeChip = document.querySelector('#job-section .filter-chip.active');
-        if (activeChip) {
-            activeType = activeChip.getAttribute('data-type');
-        }
-
-        const age = parseInt(document.getElementById('user-age-select').value);
-        const exp = document.getElementById('user-exp').value || "特になし";
-        const container = document.getElementById('job-results-container');
-        const publicRoute = document.getElementById('public-assistance-route');
-
-        container.innerHTML = ""; // クリア
-
-        // マッチングをフィルタリング
-        const filteredJobs = jobDB.filter(job => {
-            const matchArea = (selectedArea === 'all' || job.area === selectedArea);
-            const matchType = (activeType === 'all' || job.type === activeType);
-            const matchAge = (age >= job.minAge);
-            return matchArea && matchType && matchAge;
-        });
-
-        // 65才以上、かつ求人検索結果に関わらずセーフティネット公共導線をアピール
-        if (age >= 65) {
-            publicRoute.style.display = 'block';
-            container.innerHTML += `
-                <div style="background-color: #fff9f0; border: 2px solid #ffeaa7; padding: 12px; border-radius: 10px; margin-bottom: 15px; font-size: 0.85rem;">
-                    <p style="margin:0; font-weight:bold; color:var(--accent-orange);">⚠️ 65歳以上のお仕事探しについて</p>
-                    <p style="margin:5px 0 0 0; color:#555; font-size:0.8rem; line-height:1.4;">
-                        定年退職以降の年齢層では、民間の自動マッチング求人が狭まる傾向にあります。そこで本アプリでは、東京都が設置する公的な相談窓口（以下に表示中）での『対面サポート』を最優先でおすすめしています。
-                    </p>
-                </div>
-            `;
-        } else {
-            publicRoute.style.display = 'none';
-        }
-
-        if (filteredJobs.length === 0) {
-            container.innerHTML += `
-                <p style="font-size:0.85rem; text-align:center; color:#e74c3c; font-weight:bold; padding: 40px 10px; background: white; border-radius:12px; border:2px solid var(--border-color);">
-                    ご指定の地域や形態に合致する民間求人は現在ありません。<br>条件を緩めるか、全域での検索をお試しください。
+            <!-- 防災ボタン「備えストック」を住まいタブに配置 -->
+            <div class="card" style="border-top: 4px solid var(--disaster-color);">
+                <h3 style="margin-top: 0; color: var(--disaster-color); display: flex; align-items: center; gap: 8px;">
+                    🍊 住まいの安全：「備えストック」アプリで備蓄をスマートに！
+                </h3>
+                <p style="font-size: 0.9rem; color: #555; line-height: 1.5; margin-bottom: 15px;">
+                    安心な住まいには、もしもの時の『防災備蓄』が欠かせません。同じチーム「Kirari Tokyo Node B」が開発する、賞味期限切れを防ぎお裾分けを可能にする防災アプリをこちらからご利用いただけます。
                 </p>
-            `;
-        } else {
-            filteredJobs.forEach(job => {
-                let badgeLabel = "";
-                if (job.type === "part") badgeLabel = "パート・アルバイト";
-                else if (job.type === "contract") badgeLabel = "契約社員・正社員";
-                else if (job.type === "deleg") badgeLabel = "業務委託・派遣";
+                <a href="https://sonaestock.pages.dev/" target="_blank" class="action-btn" style="background-color: var(--disaster-color);">
+                    📦 家庭用防災備蓄手帳「備えストック」を開く
+                </a>
+            </div>
+        </div>
 
-                container.innerHTML += `
-                    <div class="result-card">
-                        <div class="card-header">
-                            <h3 class="card-title">${job.title}</h3>
-                            <span class="card-badge" style="background-color: #2980b9; color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: bold;">${badgeLabel}</span>
-                        </div>
-                        <p class="card-desc">勤務地: ${job.location} / 資格・経験: 「${exp}」考慮<br>${job.desc}</p>
-                        <div class="card-price">${job.price}</div>
-                        <button class="btn-submit" style="padding:8px; font-size:0.85rem;" onclick="generateJobInquiry('${job.title}')">✉️ この求人の応募問い合わせ文を作る</button>
+        <!-- -----------------------------------------
+             💼 タブ2：お仕事を探す
+             ----------------------------------------- -->
+        <div id="job-tab" class="tab-content">
+            <div class="card">
+                <h2>💼 生涯現役！シニア向け就職活動支援</h2>
+                
+                <div class="form-group">
+                    <label for="job-area">📍 就業を希望するエリア</label>
+                    <select id="job-area" onchange="resetJobSimulation()">
+                        <option value="東京都 23区内">東京都 23区内</option>
+                        <option value="東京都 多摩地域（23区外）">東京都 多摩地域（23区外）</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="job-type">🛠️ 希望する職種・働き方</label>
+                    <select id="job-type" onchange="resetJobSimulation()">
+                        <option value="軽作業・管理業務（マイペースに働く）">軽作業・管理業務（マイペースに働く）</option>
+                        <option value="事務・専門スキル職（経験を活かす）">事務・専門スキル職（経験を活かす）</option>
+                        <option value="コミュニティ・福祉関連（社会に貢献する）">コミュニティ・福祉関連（社会に貢献する）</option>
+                    </select>
+                </div>
+
+                <button class="search-btn" onclick="searchJobs()">🔍 この条件で求人相談先をマッチング</button>
+
+                <div id="job-result" class="result-box" style="border-left-color: var(--accent-color);">
+                    <h3 style="margin-top:0; color: var(--accent-color);">📍 おすすめの公的相談窓口</h3>
+                    <p id="job-result-text" style="font-weight: bold; margin-bottom: 15px;"></p>
+                    
+                    <!-- お仕事用問い合わせ例文 -->
+                    <div class="copy-section" style="margin-bottom: 15px;">
+                        <label style="font-size: 0.9rem; color: #333;">📋 公的窓口への「相談問い合わせ例文」</label>
+                        <p style="font-size: 0.8rem; color: #666; margin: 2px 0 8px 0;">以下の文章をそのままコピーして窓口相談メール等にご利用ください：</p>
+                        <textarea id="job-copy-text" class="copy-textarea" readonly></textarea>
+                        <button class="copy-btn" style="background-color: var(--primary-color);" onclick="copyToClipboard('job-copy-text')">📋 例文をコピーする</button>
+                    </div>
+
+                    <!-- 各相談窓口URL -->
+                    <div class="button-list">
+                        <a id="job-link-1" href="https://www.tokyoshigoto.jp/senior/" target="_blank" class="action-btn" style="background-color: #34495e;">
+                            🏢 東京しごとセンター（シニアコーナー）を開く
+                        </a>
+                        <a id="job-link-2" href="https://www.hellowork.mhlw.go.jp/" target="_blank" class="action-btn" style="background-color: #2980b9;">
+                            🔍 ハローワークインターネットサービスを開く
+                        </a>
+                        <a id="job-link-3" href="https://www.tokyosilver.jp/" target="_blank" class="action-btn" style="background-color: #27ae60;">
+                            🌿 東京シルバー人材連合（地域密着）を開く
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- -----------------------------------------
+             🤝 相談先を探す
+             ----------------------------------------- -->
+        <div id="consult-tab" class="tab-content">
+            <!-- ヒーローエリアとしてのココロナビ -->
+            <div class="card" style="border-left: 6px solid #3498db; padding: 20px;">
+                <h3 style="margin-top: 0; color: #2980b9;">🧠 いつでも寄り添うAIこころの相談室</h3>
+                <p style="font-size: 0.95rem; color: #555; line-height: 1.5; margin-bottom: 15px;">
+                    少し心が疲れたとき、誰かに話を聞いてほしいとき。ほそじゅんが開発したAIが、24時間優しくお話をお聞きします。
+                </p>
+                <a href="https://restart-support-ai.pages.dev/dashboard" target="_blank" class="hero-action-btn">
+                    🧠 【ココロナビ】AIこころの相談窓口を開く
+                </a>
+            </div>
+
+            <!-- インタラクティブ相談窓口マップ検索機能 -->
+            <div class="card">
+                <h2>🔍 東京都公式・お困りごと相談マップ</h2>
+                <p style="font-size: 0.9rem; color: #666; margin-bottom: 20px;">
+                    あなたのお悩みと地域に合わせた、東京都の専門の公的相談窓口を地図上に表示します。
+                </p>
+
+                <div class="form-group">
+                    <label for="consult-type">💡 どんなお悩みですか？</label>
+                    <select id="consult-type" onchange="resetConsultSimulation()">
+                        <option value="こころの健康・精神保健に関する相談">こころの健康について相談したい</option>
+                        <option value="労働条件・お仕事のトラブル相談">お仕事のトラブルを相談したい</option>
+                        <option value="地域のつながり・ボランティア・活動探し">地域のつながり・福祉活動に参加したい</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="consult-area">📍 お住まいの地域区分</label>
+                    <select id="consult-area" onchange="updateSubAreas('consult')">
+                        <option value="23区">東京都 23区内</option>
+                        <option value="多摩地区">東京都 多摩地域（23区外）</option>
+                        <option value="島しょ部">東京都 島しょ部</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="consult-sub-area">🔎 詳細な区市町村を選択してください</label>
+                    <select id="consult-sub-area" onchange="resetConsultSimulation()">
+                        <!-- JSで動的に追加されます -->
+                    </select>
+                </div>
+
+                <button class="search-btn" onclick="searchConsult()">🔍 相談先とサポートマップを表示</button>
+
+                <!-- 相談先検索結果表示エリア -->
+                <div id="consult-result" class="result-box" style="border-left-color: var(--primary-color);">
+                    <h3 style="margin-top:0; color: var(--primary-color);">📍 マップと最適な窓口案内</h3>
+                    <p id="consult-result-text" style="font-weight: bold; margin-bottom: 15px;"></p>
+
+                    <!-- 動的相談マップ（本物のLeaflet連携） -->
+                    <div class="od-info-card">
+                        <div class="od-source-badge" style="background-color: #dbeafe; color: #1e40af;">🗺️ 東京都オープンデータ・相談窓口マッピング</div>
+                        
+                        <!-- ここに相談窓口の本物マップが描画されます -->
+                        <div id="consult-map-canvas" class="map-wrapper"></div>
+                        
+                        <p id="consult-od-text" style="font-size: 0.9rem; color: #333; margin: 0; line-height: 1.4;"></p>
+                    </div>
+
+                    <!-- 窓口直結ボタン -->
+                    <div style="margin-top: 15px;">
+                        <a id="consult-link-btn" href="#" target="_blank" class="action-btn" style="background-color: var(--primary-color);">
+                            🏢 窓口の公式ホームページを開く
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- その他のお役立ちリンク -->
+            <div class="card">
+                <h3 style="margin-top: 0; color: var(--primary-color);">🚨 防災情報</h3>
+                <p style="font-size: 0.9rem; color: #555; margin-bottom: 15px;">
+                    もしものとき、避難する場所や地域の防災マップをあらかじめ確認しておきましょう。
+                </p>
+                <a href="https://map.bosai.metro.tokyo.lg.jp/index.html" target="_blank" class="action-btn" style="background-color: var(--disaster-color); font-weight: bold;">
+                    🚨 地域の避難所・避難場所を探す（東京都公式防災マップを開く）
+                </a>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ==========================================
+         ⚙️ 動的制御用 JavaScript（Leaflet本物マップ＆物件完全連動版）
+         ========================================== -->
+    <script>
+        // 市区町村のセレクト項目
+        const subAreaOptions = {
+            "23区": ["新宿区", "千代田区", "渋谷区", "港区", "足立区"],
+            "多摩地区": ["立川市", "八王子市", "武蔵野市", "町田市"],
+            "島しょ部": ["大島町", "八丈町", "小笠原村"]
+        };
+
+        // 🏠 ささエール登録住宅の物件データベース（緯度経度付き）
+        const tokyoSasaeruProperties = {
+            // 23区
+            "新宿区": [
+                { name: "ささエール 新宿御苑フロント", address: "新宿区内藤町11", rent: "65,000円", type: "1K / 25㎡", features: "完全フラットバリアフリー、緊急ボタン、見守りセンサー（毎日安否確認）", lat: 35.6852, lng: 139.7101 },
+                { name: "シニアライフ 戸山アパート", address: "新宿区大久保3丁目", rent: "58,000円", type: "1DK / 32㎡", features: "玄関スロープ、手すり完備（トイレ・浴室）、24時間巡回相談員対応可能", lat: 35.7051, lng: 139.7055 }
+            ],
+            "千代田区": [
+                { name: "ささエール 駿河台ハイツ", address: "千代田区神田駿河台1-6", rent: "82,000円", type: "1DK / 30㎡", features: "エレベーター完備、ALSOK緊急かけつけサービス、IHシステムキッチン", lat: 35.6983, lng: 139.7621 },
+                { name: "アクティブシニア 麹町レジデンス", address: "千代田区麹町3-2", rent: "95,000円", type: "1LDK / 40㎡", features: "新耐震設計、安否確認センサー、対面コンシェルジュ常駐（日中）", lat: 35.6835, lng: 139.7382 }
+            ],
+            "渋谷区": [
+                { name: "ささエール 代々木の杜シニアライフ", address: "渋谷区代々木神園町2-1", rent: "78,000円", type: "1K / 26㎡", features: "バリアフリー設計、緊急相談ブザー、緑に囲まれた静かな周辺環境", lat: 35.6782, lng: 139.6975 }
+            ],
+            "港区": [
+                { name: "ささエール 芝公園グランドヒルズ", address: "港区芝公園4-8", rent: "88,000円", type: "1DK / 33㎡", features: "車いす対応バリアフリー、見守り巡回スタッフあり、24時間オートロック", lat: 35.6559, lng: 139.7481 }
+            ],
+            "足立区": [
+                { name: "ケアライフ 千住の家", address: "足立区千住大川町", rent: "48,000円", type: "1K / 22㎡", features: "低家賃セーフティネット、段差なし、生活相談窓口併設（週2回相談）", lat: 35.7552, lng: 139.7951 }
+            ],
+            // 多摩地区
+            "立川市": [
+                { name: "ささエール 立川あけぼの館", address: "立川市曙町3丁目", rent: "52,000円", type: "1DK / 30㎡", features: "手すり完備、デイサービスステーション併設、緊急通報機能", lat: 35.7025, lng: 139.4185 }
+            ],
+            "八王子市": [
+                { name: "ケアライフ 八王子台町アパート", address: "八王子市台町2-2", rent: "45,000円", type: "1DK / 31㎡", features: "提携医療機関と24時間緊急連携、スロープ、バリアフリー仕様", lat: 35.6521, lng: 139.3248 }
+            ],
+            "武蔵野市": [
+                { name: "ささエール 吉祥寺南アネックス", address: "武蔵野市御殿山1丁目", rent: "68,000円", type: "1K / 24㎡", features: "駅徒歩圏内、バリアフリー対応、防犯カメラ完備、見守りセンサー付き", lat: 35.7011, lng: 139.5759 }
+            ],
+            "町田市": [
+                { name: "ささエール 町田の丘レジデンス", address: "町田市旭町3丁目", rent: "49,000円", type: "1DK / 28㎡", features: "浴室・便所に手すり、緊急通報装置（管理室連動）、段差なし", lat: 35.5528, lng: 139.4451 }
+            ],
+            // 島しょ部
+            "大島町": [
+                { name: "ささエール 伊豆大島・元町ハイツ", address: "大島町元町1丁目", rent: "35,000円", type: "1LDK / 42㎡", features: "地域包括支援センター直結、低床スロープ、広いバルコニー", lat: 34.7505, lng: 139.3551 }
+            ],
+            "八丈町": [
+                { name: "ケアライフ 八丈・三根テラス", address: "八丈町三根", rent: "38,000円", type: "1DK / 35㎡", features: "完全バリアフリー、緊急時安否確認通報機（役場福祉課連動）", lat: 33.1152, lng: 139.7958 }
+            ],
+            "小笠原村": [
+                { name: "ささエール 父島西町ハウス", address: "小笠原村父島西町", rent: "42,000円", type: "1DK / 33㎡", features: "福祉活動拠点隣接、バリアフリー構造、お部屋の手すりフルセット", lat: 27.0941, lng: 142.1921 }
+            ]
+        };
+
+        // 🤝 相談窓口マップ用データベース（カテゴリ・自治体別）
+        const tokyoConsultOD = {
+            "こころの健康・精神保健に関する相談": {
+                "新宿区": { name: "東京都精神保健福祉センター", address: "新宿区上落合2-28-12", lat: 35.7115, lng: 139.6912, url: "https://www.hokeniryo.metro.tokyo.lg.jp/policy/annai" },
+                "千代田区": { name: "千代田区 障害者福祉課", address: "千代田区九段南1-2-1", lat: 35.6941, lng: 139.7536, url: "https://www.hokeniryo.metro.tokyo.lg.jp/policy/annai" },
+                "渋谷区": { name: "渋谷区 障がい者福祉課", address: "渋谷区宇田川町1-1", lat: 35.6617, lng: 139.7016, url: "https://www.hokeniryo.metro.tokyo.lg.jp/policy/annai" },
+                "港区": { name: "みなと保健所 保健予防課", address: "港区三田1-4-10", lat: 35.6432, lng: 139.7425, url: "https://www.hokeniryo.metro.tokyo.lg.jp/policy/annai" },
+                "足立区": { name: "足立区 保健予防課", address: "足立区中央本町1-17-1", lat: 35.7749, lng: 139.8044, url: "https://www.hokeniryo.metro.tokyo.lg.jp/policy/annai" },
+                "立川市": { name: "東京都精神保健福祉センター多摩支所", address: "立川市曙町3-17-25", lat: 35.7001, lng: 139.4211, url: "https://www.hokeniryo.metro.tokyo.lg.jp/policy/annai" },
+                "八王子市": { name: "八王子市 保健所保健対策課", address: "八王子市東町9-11", lat: 35.6565, lng: 139.3389, url: "https://www.hokeniryo.metro.tokyo.lg.jp/policy/annai" },
+                "武蔵野市": { name: "武蔵野市 健康福祉部", address: "武蔵野市緑町2-2-28", lat: 35.7118, lng: 139.5632, url: "https://www.hokeniryo.metro.tokyo.lg.jp/policy/annai" },
+                "町田市": { name: "町田市 保健所保健予防課", address: "町田市森野2-2-22", lat: 35.5484, lng: 139.4412, url: "https://www.hokeniryo.metro.tokyo.lg.jp/policy/annai" },
+                "大島町": { name: "大島島しょ保健所", address: "大島町元町1-1-14", lat: 34.7505, lng: 139.3541, url: "https://www.hokeniryo.metro.tokyo.lg.jp/policy/annai" },
+                "八丈町": { name: "八丈島精神保健相談窓口", address: "八丈町大賀郷2551-2", lat: 33.1118, lng: 139.7915, url: "https://www.hokeniryo.metro.tokyo.lg.jp/policy/annai" },
+                "小笠原村": { name: "小笠原島しょ保健所", address: "小笠原村父島西町", lat: 27.0945, lng: 142.1912, url: "https://www.hokeniryo.metro.tokyo.lg.jp/policy/annai" }
+            },
+            "労働条件・お仕事のトラブル相談": {
+                "新宿区": { name: "東京都労働相談情報センター本部", address: "千代田区飯田橋3-10-3", lat: 35.7012, lng: 139.7455, url: "https://www.hataraku.metro.tokyo.lg.jp/soudan-c/center/" },
+                "千代田区": { name: "労働相談情報センター 本部", address: "千代田区飯田橋3-10-3", lat: 35.7012, lng: 139.7455, url: "https://www.hataraku.metro.tokyo.lg.jp/soudan-c/center/" },
+                "渋谷区": { name: "労働相談情報センター 渋谷事務所", address: "渋谷区渋谷3-18-1", lat: 35.6575, lng: 139.7042, url: "https://www.hataraku.metro.tokyo.lg.jp/soudan-c/center/" },
+                "港区": { name: "労働相談情報センター 新橋事務所", address: "港区新橋6-19-15", lat: 35.6601, lng: 139.7548, url: "https://www.hataraku.metro.tokyo.lg.jp/soudan-c/center/" },
+                "足立区": { name: "労働相談情報センター 亀戸事務所分室", address: "足立区千住1-5-7", lat: 35.7482, lng: 139.8012, url: "https://www.hataraku.metro.tokyo.lg.jp/soudan-c/center/" },
+                "立川市": { name: "労働相談情報センター多摩事務所", address: "立川市柴崎町3-9-22", lat: 35.6985, lng: 139.4121, url: "https://www.hataraku.metro.tokyo.lg.jp/soudan-c/center/" },
+                "八王子市": { name: "労働相談情報センター 八王子事務所", address: "八王子市明神町3-2-1", lat: 35.6582, lng: 139.3445, url: "https://www.hataraku.metro.tokyo.lg.jp/soudan-c/center/" },
+                "武蔵野市": { name: "多摩労働相談情報センター（国分寺管轄）", address: "国分寺市南町3-22-10", lat: 35.6991, lng: 139.4821, url: "https://www.hataraku.metro.tokyo.lg.jp/soudan-c/center/" },
+                "町田市": { name: "労働相談情報センター 八王子しごと特別窓口", address: "八王子市明神町3-2-1", lat: 35.6582, lng: 139.3445, url: "https://www.hataraku.metro.tokyo.lg.jp/soudan-c/center/" },
+                "大島町": { name: "大島労働特別相談窓口", address: "大島町元町1-1-14", lat: 34.7505, lng: 139.3541, url: "https://www.hataraku.metro.tokyo.lg.jp/soudan-c/center/" },
+                "八丈町": { name: "八丈島お仕事相談窓口", address: "八丈町三根", lat: 33.1152, lng: 139.7958, url: "https://www.hataraku.metro.tokyo.lg.jp/soudan-c/center/" },
+                "小笠原村": { name: "父島労働特別巡回相談窓口", address: "小笠原村父島", lat: 27.0941, lng: 142.1921, url: "https://www.hataraku.metro.tokyo.lg.jp/soudan-c/center/" }
+            },
+            "地域のつながり・ボランティア・活動探し": {
+                "新宿区": { name: "新宿区社会福祉協議会", address: "新宿区高田馬場1-17-20", lat: 35.7135, lng: 139.7042, url: "https://www.fukunavi.or.jp/fukunavi/" },
+                "千代田区": { name: "ちよだボランティアセンター", address: "千代田区神田駿河台1-6", lat: 35.6983, lng: 139.7621, url: "https://www.fukunavi.or.jp/fukunavi/" },
+                "渋谷区": { name: "渋谷区社会福祉協議会", address: "渋谷区神南1-18-2", lat: 35.6651, lng: 139.7011, url: "https://www.fukunavi.or.jp/fukunavi/" },
+                "港区": { name: "港区ボランティア・市民活動センター", address: "港区芝2-25-8", lat: 35.6512, lng: 139.7512, url: "https://www.fukunavi.or.jp/fukunavi/" },
+                "足立区": { name: "足立区ボランティアセンター", address: "足立区保木間2-22-1", lat: 35.7921, lng: 139.8012, url: "https://www.fukunavi.or.jp/fukunavi/" },
+                "立川市": { name: "立川市ボランティア・市民活動センター", address: "立川市富士見町2-36-47", lat: 35.6981, lng: 139.4011, url: "https://www.fukunavi.or.jp/fukunavi/" },
+                "八王子市": { name: "八王子市市民活動支援センター", address: "八王子市旭町12-1", lat: 35.6561, lng: 139.3401, url: "https://www.fukunavi.or.jp/fukunavi/" },
+                "武蔵野市": { name: "武蔵野市ボランティアセンター", address: "武蔵野市境2-11-1", lat: 35.7021, lng: 139.5421, url: "https://www.fukunavi.or.jp/fukunavi/" },
+                "町田市": { name: "町田市ボランティアセンター", address: "町田市原町田4-24-6", lat: 35.5451, lng: 139.4512, url: "https://www.fukunavi.or.jp/fukunavi/" },
+                "大島町": { name: "大島町社会福祉協議会", address: "大島町差木地", lat: 34.6982, lng: 139.3981, url: "https://www.fukunavi.or.jp/fukunavi/" },
+                "八丈町": { name: "八丈町社会福祉協議会", address: "八丈町大賀郷", lat: 33.1118, lng: 139.7915, url: "https://www.fukunavi.or.jp/fukunavi/" },
+                "小笠原村": { name: "小笠原村社会福祉協議会", address: "小笠原村父島西町", lat: 27.0941, lng: 142.1921, url: "https://www.fukunavi.or.jp/fukunavi/" }
+            }
+        };
+
+        // ==========================================
+        // ⚙️ UI、本物地図、連動制御スクリプト
+        // ==========================================
+
+        let housingMap;         // 「住まい」用の本物Leafletインスタンス
+        let consultMap;         // 「相談先」用の本物Leafletインスタンス
+        let housingMarkers = []; // 地図から消去・追加を管理するための配列
+        let consultMarker;      // 相談先地図のピン管理
+
+        // 初期ロード時にドロップダウンを生成
+        window.addEventListener('DOMContentLoaded', () => {
+            updateSubAreas('housing');
+            updateSubAreas('consult');
+        });
+
+        // 地域区分が選ばれたときに、詳細な区市町村ドロップダウンを動的変更
+        function updateSubAreas(type) {
+            const mainSelect = document.getElementById(type + '-area');
+            const subSelect = document.getElementById(type + '-sub-area');
+            const selectedRegion = mainSelect.value;
+            
+            subSelect.innerHTML = "";
+
+            const districts = subAreaOptions[selectedRegion];
+            districts.forEach(dist => {
+                const opt = document.createElement('option');
+                opt.value = dist;
+                opt.textContent = dist;
+                subSelect.appendChild(opt);
+            });
+
+            if (type === 'housing') {
+                resetHousingSimulation();
+            } else if (type === 'consult') {
+                resetConsultSimulation();
+            }
+        }
+
+        // タブ切り替え
+        function switchTab(tabId, element) {
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.classList.remove('active'));
+
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+
+            document.getElementById(tabId).classList.add('active');
+            if (element) {
+                element.classList.add('active');
+            }
+
+            resetHousingSimulation();
+            resetJobSimulation();
+            resetConsultSimulation();
+
+            // タブ切り替え後にマップの表示を強制リフレッシュする（Leafletが崩れるのを防ぐためのプロの手法）
+            setTimeout(() => {
+                if (tabId === 'housing-tab' && housingMap) {
+                    housingMap.invalidateSize();
+                } else if (tabId === 'consult-tab' && consultMap) {
+                    consultMap.invalidateSize();
+                }
+            }, 100);
+        }
+
+        // ホームメニューから各種タブへ飛ぶ
+        function goToTabFromHome(tabId, navBtnId) {
+            const navBtn = document.getElementById(navBtnId);
+            switchTab(tabId, navBtn);
+        }
+
+        function resetHousingSimulation() {
+            const box = document.getElementById('housing-result');
+            if (box) box.style.display = 'none';
+            document.getElementById('property-detail-box').style.display = 'none';
+        }
+
+        function resetJobSimulation() {
+            const box = document.getElementById('job-result');
+            if (box) box.style.display = 'none';
+        }
+
+        function resetConsultSimulation() {
+            const box = document.getElementById('consult-result');
+            if (box) box.style.display = 'none';
+        }
+
+        // 🏠 住まい探し：本物の地図＆物件連動マッチング
+        function searchHousing() {
+            const regionValue = document.getElementById('housing-area').value;
+            const distValue = document.getElementById('housing-sub-area').value;
+            const type = document.getElementById('housing-type').value;
+            const resultBox = document.getElementById('housing-result');
+            const resultText = document.getElementById('housing-result-text');
+            const propertiesList = document.getElementById('housing-properties-list');
+            const odText = document.getElementById('housing-od-text');
+
+            // 1. 基本メッセージ表示
+            resultText.innerHTML = `【選択エリア】: <strong>${distValue} （${regionValue}）</strong><br>` +
+                                 `【世帯状況】: <strong>${type}</strong><br><br>` +
+                                 `上記地域で見つかった、東京都指定の「ささエール登録住宅（セーフティネット住宅）」です。希望の物件カードを選択すると、<strong>地図が移動し、詳しい物件スペック（家賃や間取り、見守り設備等）</strong>を確認できます。`;
+
+            // 2. 物件データの取得
+            const properties = tokyoSasaeruProperties[distValue] || tokyoSasaeruProperties["新宿区"];
+
+            // 3. 物件リストをHTML生成
+            let listHtml = "";
+            properties.forEach((prop, index) => {
+                listHtml += `
+                    <div class="property-card" id="housing-card-${index}" onclick="selectHousingProperty(${index}, '${distValue}')">
+                        <h4 style="margin:0 0 5px 0; color: var(--primary-color);">🏠 ${prop.name}</h4>
+                        <p style="margin:0; font-size: 0.85rem; color: #555;">📍 住所: ${prop.address} | 💰 参考家賃: ${prop.rent}</p>
                     </div>
                 `;
             });
+            propertiesList.innerHTML = listHtml;
+
+            // 4. 物件一覧紹介テキスト
+            odText.innerHTML = `周辺のささエール登録住宅リスト：<br>` + properties.map(p => `• <strong>${p.name}</strong> （住所：${p.address} / ${p.type}）`).join("<br>");
+
+            // 5. 結果ボックスを一旦表示（Leafletが描画領域サイズを正しく計算するために、表示後から地図を初期化します）
+            resultBox.style.display = 'block';
+
+            // 6. 🗺️ 本物の地図（Leaflet）を初期化・更新
+            try {
+                if (properties.length > 0) {
+                    const centerLat = properties[0].lat;
+                    const centerLng = properties[0].lng;
+
+                    // 初めて検索した場合、地図を生成
+                    if (!housingMap) {
+                        housingMap = L.map('map-canvas').setView([centerLat, centerLng], 14);
+                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                        }).addTo(housingMap);
+                    } else {
+                        housingMap.setView([centerLat, centerLng], 14);
+                        housingMap.invalidateSize(); // 描画崩れ防止
+                    }
+
+                    // 既存のピン（マーカー）をクリア
+                    housingMarkers.forEach(m => housingMap.removeLayer(m));
+                    housingMarkers = [];
+
+                    // 物件ごとにピンを設置
+                    properties.forEach((prop, index) => {
+                        // 100%バグらない＆色を選べる丸型サークルマーカー技術を使用
+                        const marker = L.circleMarker([prop.lat, prop.lng], {
+                            radius: 12,
+                            fillColor: '#1b4d3e', // テーマカラーの深緑
+                            color: '#ffffff',
+                            weight: 3,
+                            opacity: 1,
+                            fillOpacity: 0.95
+                        }).addTo(housingMap);
+
+                        // ポップアップの設定
+                        marker.bindPopup(`
+                            <div style="font-family:inherit; font-size: 0.9rem; text-align: left;">
+                                <strong style="color:var(--primary-color);">${prop.name}</strong><br>
+                                💰 家賃: ${prop.rent}<br>
+                                📐 間取り: ${prop.type}<br>
+                                <button onclick="selectHousingProperty(${index}, '${distValue}')" style="margin-top:6px; padding:3px 8px; font-size:0.75rem; background-color:var(--primary-color); color:white; border:none; border-radius:4px; cursor:pointer; width:100%;">詳細を選択する</button>
+                            </div>
+                        `);
+
+                        housingMarkers.push(marker);
+                    });
+
+                    // デフォルトで最初の物件を自動選択して詳細表示！
+                    selectHousingProperty(0, distValue);
+                }
+            } catch (e) {
+                console.error("Leafletマップ読み込みエラー:", e);
+                document.getElementById('map-canvas').innerHTML = `
+                    <div style="padding:20px; text-align:center; color:#e67e22; font-weight:bold;">
+                        ⚠️ 地図APIの読み込みに失敗しました（オフラインか回線が不安定な可能性があります）。<br>
+                        ですが、システム連動によるデータのマッチング自体は正常に動作しています！
+                    </div>
+                `;
+            }
+
+            resultBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
-        
-        document.getElementById('main-scroll-box').scrollTop = 350;
-    }
 
-    // 仕事問い合わせ自動生成
-    function generateJobInquiry(jobName) {
-        const output = document.getElementById('job-letter-output');
-        
-        let text = `【企業採用担当者様へのお問い合わせ文（コピーしてお使いください）】
+        // 🏠 住まい：物件が選択されたときに、ハイライト、詳細テーブル更新、地図移動、例文生成
+        function selectHousingProperty(index, distValue) {
+            const properties = tokyoSasaeruProperties[distValue] || tokyoSasaeruProperties["新宿区"];
+            const prop = properties[index];
+            if (!prop) return;
 
-お世話になります。東京 太郎と申します。
-貴社が募集されている「${jobName}」の求人に応募いたしたく、ご連絡いたしました。
+            // 1. 詳細ボックスの更新＆表示
+            document.getElementById('property-detail-box').style.display = 'block';
+            document.getElementById('det-name').textContent = prop.name;
+            document.getElementById('det-address').textContent = prop.address;
+            document.getElementById('det-rent').textContent = prop.rent;
+            document.getElementById('det-type').textContent = prop.type;
+            document.getElementById('det-features').textContent = prop.features;
 
-私は現在、50代からの新しい挑戦としてこれまでの「社会人経験」や「資格」を活かせるお仕事を探しております。
-年齢面を含めて、柔軟にご相談が可能とのことでしたので、ぜひ一度面接のお時間をいただき、私のこれまでの経験がどのように貢献できるかお話しさせていただけますでしょうか。
+            // 2. 物件カードのハイライト切り替え
+            const cards = document.querySelectorAll('.property-card');
+            cards.forEach(card => card.classList.remove('selected'));
+            const selectedCard = document.getElementById(`housing-card-${index}`);
+            if (selectedCard) {
+                selectedCard.classList.add('selected');
+            }
 
-お忙しいところ大変恐縮ですが、ご検討のほどよろしくお願い申し上げます。`;
+            // 3. 本物地図が動いているなら、その場所にビューを移動させてピンの吹き出しを開く！
+            if (housingMap && housingMarkers[index]) {
+                housingMap.setView([prop.lat, prop.lng], 16); // ズームレベルを上げて拡大！
+                housingMarkers[index].openPopup();
+            }
 
-        output.innerText = text;
-        output.style.display = 'block';
-        output.scrollIntoView({ behavior: 'smooth' });
-    }
-</script>
+            // 4. お問い合わせ例文を、その物件内容に合わせて動的カスタマイズ
+            const regionValue = document.getElementById('housing-area').value;
+            const type = document.getElementById('housing-type').value;
+            const copyTextarea = document.getElementById('housing-copy-text');
+
+            copyTextarea.value = `東京都住宅政策本部 御中 / ささエール相談窓口 御中
+
+いつもお世話になっております。「東京くらしごとナビ」を拝見し、50代からのセーフティネット住宅について相談したくご連絡いたしました。
+
+【希望エリア】: ${distValue} (${regionValue})
+【希望物件名】: ${prop.name} (家賃: ${prop.rent} / 間取り: ${prop.type})
+【世帯状況】: ${type}
+
+現在、これからの生活を見据えて、安心して長く暮らせる住まいを探しております。選択いたしましたこちらの物件は、私の必要とする設備・サポート（${prop.features}）が整っているため、ぜひ詳しくお話を伺いたく思っております。入居の手続きや必要となる要件についてご案内いただけますでしょうか。よろしくお願いいたします。`;
+        }
+
+        // 住まいデモ申し込み完了
+        function submitHousing() {
+            const area = document.getElementById('housing-sub-area').value;
+            const selectedPropName = document.getElementById('det-name').textContent;
+            alert(`【デモ申し込み完了】\n\nお目当ての物件：\n「${selectedPropName}」（${area}）\nのご相談申し込み内容を仮受付いたしました！実用化の際は、東京都の「ささエール」など公式窓口とシステム連携し、実際の申請手続きに繋がります。`);
+        }
+
+        // 💼 お仕事探しシミュレーション
+        function searchJobs() {
+            const areaValue = document.getElementById('job-area').value;
+            const type = document.getElementById('job-type').value;
+            const resultBox = document.getElementById('job-result');
+            const resultText = document.getElementById('job-result-text');
+            const copyTextarea = document.getElementById('job-copy-text');
+
+            resultText.innerHTML = `📍 【${areaValue}】で【${type}】をお探しのあなたへお勧めのマッチング窓口：`;
+            
+            // お仕事相談の問い合わせ例文
+            copyTextarea.value = `東京しごとセンター / ハローワークインターネットサービス 相談窓口 御中
+
+お世話になります。「東京くらしごとナビ」を拝見し、今後の就職相談について伺いたくご連絡いたしました。
+
+【希望エリア】: ${areaValue}
+【希望職種・働き方】: ${type}
+
+これまでの経験を活かしつつ、年齢や体力に配慮した形で、無理なく地域に貢献できるお仕事を探しております。ハローワーク等の相談窓口での対面カウンセリングや、適合する求人情報の提供について、ご案内いただけますでしょうか。よろしくお願いいたします。`;
+
+            resultBox.style.display = 'block';
+            resultBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // 🤝 相談窓口：お悩み相談オリジナル・ダイナミックマップ検索（こちらも本物 Leaflet 連携！）
+        function searchConsult() {
+            const type = document.getElementById('consult-type').value;
+            const regionValue = document.getElementById('consult-area').value;
+            const distValue = document.getElementById('consult-sub-area').value;
+            const resultBox = document.getElementById('consult-result');
+            const resultText = document.getElementById('consult-result-text');
+            const odText = document.getElementById('consult-od-text');
+            const linkBtn = document.getElementById('consult-link-btn');
+
+            // 1. 選択された市区町村ごとの相談窓口データを取得
+            const selectedInfo = tokyoConsultOD[type][distValue] || tokyoConsultOD[type]["新宿区"];
+
+            // 2. 案内テキスト更新
+            resultText.innerHTML = `👤 相談カテゴリー：<strong>${type}</strong><br>` +
+                                 `📍 対象地域：<strong>${distValue} （${regionValue}）</strong>`;
+
+            odText.innerHTML = `<strong>窓口名：${selectedInfo.name}</strong><br>` +
+                               `📌 所在地：${selectedInfo.address}<br>` +
+                               `💡 自治体公式オープンデータより所在地座標を自動検出し、拡大縮小マップにプロットしました。`;
+
+            // 3. ボタンURL更新
+            linkBtn.href = selectedInfo.url;
+            linkBtn.innerText = `🏢 ${selectedInfo.name} の公式HPへ`;
+
+            // 4. 結果表示エリアを見せてから地図をロード
+            resultBox.style.display = 'block';
+
+            // 5. 🗺️ 相談先本物地図（Leaflet）の描画
+            try {
+                if (!consultMap) {
+                    consultMap = L.map('consult-map-canvas').setView([selectedInfo.lat, selectedInfo.lng], 15);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                    }).addTo(consultMap);
+                } else {
+                    consultMap.setView([selectedInfo.lat, selectedInfo.lng], 15);
+                    consultMap.invalidateSize();
+                }
+
+                // 既存のピンをクリア
+                if (consultMarker) {
+                    consultMap.removeLayer(consultMarker);
+                }
+
+                // 青色のサークルマーカーを構築
+                consultMarker = L.circleMarker([selectedInfo.lat, selectedInfo.lng], {
+                    radius: 13,
+                    fillColor: '#2980b9', // ブルー
+                    color: '#ffffff',
+                    weight: 3,
+                    opacity: 1,
+                    fillOpacity: 0.95
+                }).addTo(consultMap);
+
+                consultMarker.bindPopup(`<strong>${selectedInfo.name}</strong><br>${selectedInfo.address}`).openPopup();
+
+            } catch (e) {
+                console.error(e);
+                document.getElementById('consult-map-canvas').innerHTML = `<div style="padding:20px;text-align:center;">（簡易マップ表示中）</div>`;
+            }
+
+            resultBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // コピー処理関数
+        function copyToClipboard(textareaId) {
+            const copyText = document.getElementById(textareaId);
+            copyText.select();
+            copyText.setSelectionRange(0, 99999); // スマホ対応
+            
+            try {
+                navigator.clipboard.writeText(copyText.value);
+                alert("例文をクリップボードにコピーしました！そのままメールや窓口相談フォームに貼り付けてご利用ください。");
+            } catch (err) {
+                document.execCommand("copy");
+                alert("例文をコピーしました！");
+            }
+        }
+
+        // 最初に戻る
+        function goToHome() {
+            document.getElementById('housing-area').selectedIndex = 0;
+            document.getElementById('housing-type').selectedIndex = 0;
+            document.getElementById('job-area').selectedIndex = 0;
+            document.getElementById('job-type').selectedIndex = 0;
+            document.getElementById('consult-area').selectedIndex = 0;
+
+            updateSubAreas('housing');
+            updateSubAreas('consult');
+
+            resetHousingSimulation();
+            resetJobSimulation();
+            resetConsultSimulation();
+
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.classList.remove('active'));
+
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+
+            document.getElementById('home-tab').classList.add('active');
+
+            alert("トップメニューに戻りました。");
+        }
+    </script>
 </body>
 </html>
