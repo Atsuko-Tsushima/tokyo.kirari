@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ソナエノワ (Sonae-no-Wa) - 共助おすそわけアプリ</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Zen Maru Gothic -->
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+    <!-- Leaflet CSS for Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <style>
+        body {
+            font-family: 'Zen Maru Gothic', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        }
+        /* Custom Scrollbar for list container */
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 10px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: 10px;
+        }
+        /* Leaflet custom label style */
+        .custom-div-icon {
+            background: none;
+            border: none;
+        }
+        .marker-pin {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            border: 3px solid white;
+            transition: transform 0.2s ease;
+        }
+        .marker-pin:hover {
+            transform: scale(1.15);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-2 sm:p-4 text-slate-800">
+
+    <!-- Container wrapper with automatic scroll to ensure bottom components never get cut -->
+    <div class="w-full max-w-md my-auto overflow-y-auto">
+
+        <!-- Smartphone Bezel Mockup Frame -->
+        <div class="relative mx-auto bg-[#1e293b] rounded-[45px] p-4 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)] border-4 border-[#334155] w-full aspect-[9/19] max-h-[880px] flex flex-col overflow-hidden">
+
+            <!-- Speaker Bezel and Camera Notch -->
+            <div class="absolute top-2 left-1/2 transform -translate-x-1/2 w-32 h-4 bg-[#111827] rounded-full z-50 flex items-center justify-center">
+                <div class="w-12 h-1 bg-[#374151] rounded-full mr-2"></div>
+                <div class="w-2.5 h-2.5 bg-[#1f2937] rounded-full"></div>
+            </div>
+
+            <!-- Home Button/Bar on bottom -->
+            <div class="absolute bottom-1.5 left-1/2 transform -translate-x-1/2 w-28 h-1 bg-slate-600 rounded-full z-50"></div>
+
+            <!-- Screen Workspace Area -->
+            <div class="w-full h-full bg-[#f8fafc] rounded-[32px] overflow-hidden flex flex-col relative pt-4 pb-2">
+
+                <!-- 1. Header (Always Fixed on Top) -->
+                <header class="bg-[#10b981] text-white pt-5 pb-3 px-4 shadow-md flex items-center justify-between z-40">
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-2xl">🌱</span>
+                        <h1 class="text-xl font-black tracking-wider">ソナエノワ</h1>
+                    </div>
+                    <!-- Area Selector Button (Dropdown) -->
+                    <div class="relative">
+                        <button onclick="toggleAreaDropdown()" id="areaBtn" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-black py-1 px-2.5 rounded-full flex items-center gap-1 shadow transition-colors">
+                            📍 世田谷区 <span class="text-[9px]">▼</span>
+                        </button>
+                        <!-- Area Dropdown Menu -->
+                        <div id="areaDropdown" class="hidden absolute right-0 mt-1.5 w-32 bg-white rounded-lg shadow-xl border border-slate-200 text-slate-700 text-sm font-bold z-50 overflow-hidden">
+                            <button onclick="changeArea('setagaya')" class="w-full text-left px-3 py-2 hover:bg-emerald-50 transition-colors">世田谷区 三茶</button>
+                            <button onclick="changeArea('suginami')" class="w-full text-left px-3 py-2 hover:bg-emerald-50 transition-colors">杉並区 高円寺</button>
+                            <button onclick="changeArea('nerima')" class="w-full text-left px-3 py-2 hover:bg-emerald-50 transition-colors">練馬区 練馬駅</button>
+                            <button onclick="changeArea('ota')" class="w-full text-left px-3 py-2 hover:bg-emerald-50 transition-colors">大田区 蒲田駅</button>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- 2. Main Content Scroll Area -->
+                <main class="flex-1 overflow-y-auto relative custom-scroll px-3.5 pt-3">
+
+                    <!-- ================= TAB 1: HOME (MY STOCK) ================= -->
+                    <div id="tab-home" class="tab-content flex flex-col gap-2.5 h-full">
+
+                        <!-- Top Synchronization Bar -->
+                        <div class="bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl p-2.5 shadow flex items-center justify-between gap-1.5 relative overflow-hidden shrink-0">
+                            <!-- Reset Button (Appears after synchronization) -->
+                            <button id="resetSyncBtn" onclick="resetSyncData()" class="hidden absolute left-1.5 top-1.5 bg-slate-900/60 hover:bg-slate-900/80 text-white text-[9px] font-black py-0.5 px-1.5 rounded-full transition-all flex items-center gap-1 z-30">
+                                ↺ 戻す
+                            </button>
+
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-xl animate-bounce">🔄</span>
+                                <div class="leading-tight">
+                                    <p class="text-[10px] opacity-90 font-black">備えストック連携</p>
+                                    <p class="text-[11px] font-black leading-none">二重登録の手間をゼロに！</p>
+                                </div>
+                            </div>
+                            <button id="syncBtn" onclick="runDataSync()" class="bg-white text-emerald-600 hover:bg-emerald-50 text-xs font-black py-1 px-2.5 rounded-full shadow-md transition-all flex items-center gap-1 whitespace-nowrap shrink-0">
+                                🔄 備蓄データを同期
+                            </button>
+                        </div>
+
+                        <!-- Household Stock Dashboard Circular Card -->
+                        <div class="bg-white rounded-2xl p-2.5 shadow-sm border border-slate-100 flex items-center gap-3 shrink-0">
+                            <!-- Circular Indicator -->
+                            <div class="relative w-16 h-16 flex-shrink-0 flex items-center justify-center">
+                                <svg class="w-full h-full transform -rotate-90">
+                                    <circle cx="32" cy="32" r="28" stroke="#f1f5f9" stroke-width="5" fill="transparent" />
+                                    <circle id="progressCircle" cx="32" cy="32" r="28" stroke="#10b981" stroke-width="5" fill="transparent"
+                                            stroke-dasharray="175.9" stroke-dashoffset="49.2" class="transition-all duration-1000 ease-out" />
+                                </svg>
+                                <div class="absolute text-center">
+                                    <span id="progressText" class="text-base font-black text-slate-800">72%</span>
+                                </div>
+                            </div>
+                            <!-- Title details -->
+                            <div class="flex-1 min-w-0 leading-tight">
+                                <p class="text-sm font-black text-slate-800 leading-tight">家庭の備蓄充足率</p>
+                                <p class="text-[10px] text-slate-500 font-bold leading-tight">「備えストック」から自動集計</p>
+                                <div class="flex items-center gap-1 mt-1">
+                                    <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                    <span id="syncStatus" class="text-[9px] text-emerald-600 font-black">自動同期中</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Mini Interactive Actions Section -->
+                        <div class="grid grid-cols-2 gap-2 shrink-0">
+                            <button onclick="openPostModal('give')" class="bg-gradient-to-br from-amber-400 to-orange-500 text-white rounded-xl py-1.5 px-2 shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-1">
+                                <span class="text-sm">🤝</span>
+                                <span class="text-xs font-black tracking-tight whitespace-nowrap">譲ります</span>
+                            </button>
+                            <button onclick="openPostModal('request')" class="bg-gradient-to-br from-rose-400 to-pink-500 text-white rounded-xl py-1.5 px-2 shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-1">
+                                <span class="text-sm">🚨</span>
+                                <span class="text-xs font-black tracking-tight whitespace-nowrap">譲って</span>
+                            </button>
+                        </div>
+
+                        <!-- Household Stock List Section (Flex fill) -->
+                        <div class="flex-1 flex flex-col min-h-[140px] bg-white rounded-2xl p-2.5 shadow-sm border border-slate-100">
+                            <div class="flex items-center justify-between mb-1 shrink-0">
+                                <h3 class="text-xs font-black text-slate-800">🏠 おすそわけ可能な備蓄品リスト</h3>
+                                <span class="text-[9px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full font-black">期限切迫あり</span>
+                            </div>
+                            <!-- List Grid -->
+                            <div id="stockListContainer" class="flex-1 overflow-y-auto custom-scroll pr-1 flex flex-col gap-1.5">
+                                <!-- Base Stock Item 1 -->
+                                <div class="flex items-center justify-between bg-slate-50 p-1.5 rounded-lg border border-slate-100 text-[11px] font-bold">
+                                    <div class="flex items-center gap-1.5 min-w-0">
+                                        <span class="text-lg flex-shrink-0">🥫</span>
+                                        <div class="truncate">
+                                            <p class="font-black truncate text-slate-800">さばの缶詰 (味噌煮)</p>
+                                            <p class="text-[9px] text-rose-500 font-black">賞味期限: 2026-07-02 (切)</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-1">
+                                        <span class="text-slate-500 font-black">×2個</span>
+                                        <button onclick="postPredefinedItem('さばの缶詰', '🥫', '2', '譲ります！賞味期限が近いですがどうぞ')" class="bg-amber-500 hover:bg-amber-600 text-white font-black px-1.5 py-0.5 rounded shadow text-[9px]">おすそわけ</button>
+                                    </div>
+                                </div>
+                                <!-- Base Stock Item 2 -->
+                                <div class="flex items-center justify-between bg-slate-50 p-1.5 rounded-lg border border-slate-100 text-[11px] font-bold">
+                                    <div class="flex items-center gap-1.5 min-w-0">
+                                        <span class="text-lg flex-shrink-0">💧</span>
+                                        <div class="truncate">
+                                            <p class="font-black truncate text-slate-800">保存水 2Lボトル</p>
+                                            <p class="text-[9px] text-amber-500 font-black">賞味期限: 2026-07-30 (近)</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-1">
+                                        <span class="text-slate-500 font-black">×6本</span>
+                                        <button onclick="postPredefinedItem('保存水 2L', '💧', '3', '余りそうなので必要な方に差し上げます')" class="bg-amber-500 hover:bg-amber-600 text-white font-black px-1.5 py-0.5 rounded shadow text-[9px]">おすそわけ</button>
+                                    </div>
+                                </div>
+                                <!-- Dynamically added items go here -->
+                            </div>
+                        </div>
+
+                        <!-- Bottom Recipe Redirect Button (Consolidated to match 1-screen perfectly) -->
+                        <button onclick="switchTab(4)" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-xl py-1.5 px-3 border border-emerald-200 shadow-sm flex items-center justify-between transition-colors mt-auto shrink-0">
+                            <div class="flex items-center gap-1">
+                                <span class="text-sm">🍳</span>
+                                <span class="text-xs font-black">備蓄おすすめレシピ ➔</span>
+                            </div>
+                            <span class="text-[10px] font-bold text-emerald-600">公式防災レシピへ</span>
+                        </button>
+                    </div>
+
+                    <!-- ================= TAB 2: NEIGHBORHOOD MAP (INTEGRATED PIN VIEW) ================= -->
+                    <div id="tab-map" class="tab-content hidden flex flex-col gap-2 h-full">
+                        <!-- Map Guide Legend -->
+                        <div class="bg-white rounded-xl p-1.5 shadow-sm border border-slate-100 flex items-center justify-around text-[10px] font-black shrink-0">
+                            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>🍊 譲る</span>
+                            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span>🚨 欲しい(SOS)</span>
+                            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>🏪 協力拠点</span>
+                        </div>
+
+                        <!-- Real leaflet map view -->
+                        <div class="flex-1 rounded-2xl overflow-hidden shadow-inner border border-slate-200 relative min-h-[220px]">
+                            <div id="leafletMap" class="w-full h-full z-10"></div>
+                            <!-- Geolocation simulator floating button -->
+                            <button onclick="geolocateSimulator()" class="absolute bottom-3 right-3 bg-white hover:bg-slate-50 p-2 rounded-full shadow-lg z-20 border border-slate-200 transition-transform active:scale-95" title="現在地を特定">
+                                <span class="text-lg block">🎯</span>
+                            </button>
+                        </div>
+
+                        <!-- Dynamic notification of matchmaking -->
+                        <div class="bg-amber-50 rounded-xl p-2 border border-amber-200 flex items-center justify-between text-[11px] font-black shrink-0">
+                            <div class="flex items-center gap-1">
+                                <span class="animate-pulse">🔄</span>
+                                <span class="text-amber-800 truncate">近所でサバ缶とトマト缶の近接マッチングが可能！</span>
+                            </div>
+                            <button onclick="alert('鈴木さんのSOSトマト缶と、ご近所おすそ分けのサバ缶でのコラボレシピ（サバカレー）を提案します！')" class="bg-amber-500 hover:bg-amber-600 text-white px-2 py-0.5 rounded text-[10px] shadow transition-colors">確認</button>
+                        </div>
+                    </div>
+
+                    <!-- ================= TAB 3: COOPERATION STATIONS LIST ================= -->
+                    <div id="tab-stations" class="tab-content hidden flex flex-col gap-2.5 h-full">
+                        <div class="flex items-center justify-between shrink-0">
+                            <h3 class="text-xs font-black text-slate-800">🏪 東京都食品営業許可連携 協力拠点</h3>
+                            <span class="text-[9px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full font-black">公認ステーション</span>
+                        </div>
+
+                        <!-- Search Bar within Station tab -->
+                        <div class="bg-white rounded-xl p-1.5 shadow-sm border border-slate-100 flex items-center gap-2 shrink-0">
+                            <span class="text-xs text-slate-400">🔍</span>
+                            <input type="text" placeholder="キーワードで拠点を検索..." class="w-full bg-transparent border-none outline-none text-xs font-bold text-slate-700">
+                        </div>
+
+                        <!-- Stations Card Scroll Container -->
+                        <div id="stationListContainer" class="flex-1 overflow-y-auto custom-scroll pr-1 flex flex-col gap-2">
+                            <!-- Dynamically loaded on changeArea() -->
+                        </div>
+                    </div>
+
+                    <!-- ================= TAB 4: OFFICIAL DISASTER RECIPE HUBS ================= -->
+                    <div id="tab-recipes" class="tab-content hidden flex flex-col gap-2.5 h-full">
+                        <div class="bg-emerald-50 rounded-xl p-2.5 border border-emerald-150 text-[11px] font-bold text-emerald-800 leading-tight shrink-0">
+                            <p class="font-black text-sm mb-0.5 flex items-center gap-1">💡 公共・ライフライン連携レシピ</p>
+                            自治体や省庁、インフラ企業が災害時調理用に提供する、水やガスを極限まで節約できる公認お役立ち情報です。
+                        </div>
+
+                        <!-- Grid list of redirect recipe links -->
+                        <div class="flex-1 overflow-y-auto custom-scroll pr-1 flex flex-col gap-2">
+                            <!-- Card 1 -->
+                            <a href="https://www.bichiku.metro.tokyo.lg.jp/tips/tips06/" target="_blank" class="bg-white rounded-xl p-2.5 border border-slate-100 shadow-sm hover:shadow transition-shadow flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center text-xl shrink-0">🗼</div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs font-black text-slate-800 leading-snug">東京都公式：東京備蓄ナビ</p>
+                                    <p class="text-[9px] text-slate-500 font-bold leading-tight">家庭でできる「備蓄のコツとアイデア」</p>
+                                </div>
+                                <span class="text-slate-400 text-xs">➔</span>
+                            </a>
+                            <!-- Card 2 -->
+                            <a href="https://www.maff.go.jp/j/pr/aff/2603/spe1_03.html" target="_blank" class="bg-white rounded-xl p-2.5 border border-slate-100 shadow-sm hover:shadow transition-shadow flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center text-xl shrink-0">🌾</div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs font-black text-slate-800 leading-snug">農林水産省：簡単ストックガイド</p>
+                                    <p class="text-[9px] text-slate-500 font-bold leading-tight">洗い物の水を出さないパッククッキング等</p>
+                                </div>
+                                <span class="text-slate-400 text-xs">➔</span>
+                            </a>
+                            <!-- Card 3 -->
+                            <a href="https://uchi.tokyo-gas.co.jp/recipes/topics/7588" target="_blank" class="bg-white rounded-xl p-2.5 border border-slate-100 shadow-sm hover:shadow transition-shadow flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center text-xl shrink-0">🔥</div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs font-black text-slate-800 leading-snug">東京ガス：もしも非常食レシピ</p>
+                                    <p class="text-[9px] text-slate-500 font-bold leading-tight">備蓄缶詰や乾物の水分を余さず使う技</p>
+                                </div>
+                                <span class="text-slate-400 text-xs">➔</span>
+                            </a>
+                            <!-- Card 4 -->
+                            <a href="https://www.youtube.com/watch?v=DRFZmCAji8A&t=112s" target="_blank" class="bg-white rounded-xl p-2.5 border border-slate-100 shadow-sm hover:shadow transition-shadow flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center text-xl shrink-0">📹</div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs font-black text-slate-800 leading-snug">実演動画：簡単パッククッキング</p>
+                                    <p class="text-[9px] text-slate-500 font-bold leading-tight">もしもの時にポリ袋でごはんが炊ける技</p>
+                                </div>
+                                <span class="text-slate-400 text-xs">➔</span>
+                            </a>
+                        </div>
+                    </div>
+
+                </main>
+
+                <!-- 3. Bottom Navigation Bar (Always Fixed on Bottom) -->
+                <nav class="bg-white border-t border-slate-200 py-1 px-2 flex justify-around items-center z-40 shrink-0">
+                    <button onclick="switchTab(1)" id="nav-btn-1" class="flex flex-col items-center gap-0.5 text-[#10b981] transition-all font-black scale-105">
+                        <span class="text-lg">🏠</span>
+                        <span class="text-[9px] tracking-tighter">マイ在庫</span>
+                    </button>
+                    <button onclick="switchTab(2)" id="nav-btn-2" class="flex flex-col items-center gap-0.5 text-slate-400 hover:text-slate-600 transition-all font-black">
+                        <span class="text-lg">📍</span>
+                        <span class="text-[9px] tracking-tighter">おすそわけMAP</span>
+                    </button>
+                    <button onclick="switchTab(3)" id="nav-btn-3" class="flex flex-col items-center gap-0.5 text-slate-400 hover:text-slate-600 transition-all font-black">
+                        <span class="text-lg">🏪</span>
+                        <span class="text-[9px] tracking-tighter">協力拠点</span>
+                    </button>
+                    <button onclick="switchTab(4)" id="nav-btn-4" class="flex flex-col items-center gap-0.5 text-slate-400 hover:text-slate-600 transition-all font-black">
+                        <span class="text-lg">🍳</span>
+                        <span class="text-[9px] tracking-tighter">公式レシピ</span>
+                    </button>
+                </nav>
+
+                <!-- 4. Interactive Feedback Toast Notification Popup -->
+                <div id="toastNotification" class="hidden absolute top-16 left-1/2 transform -translate-x-1/2 bg-slate-900/90 text-white text-[11px] font-black py-2 px-4 rounded-full z-50 shadow-2xl flex items-center gap-2 border border-slate-700 whitespace-nowrap">
+                    <span id="toastIcon">💡</span>
+                    <span id="toastMessage">トースト通知メッセージ</span>
+                </div>
+
+                <!-- 5. Interactive Post Create Modal Overlay -->
+                <div id="postModal" class="hidden absolute inset-0 bg-black/60 z-50 flex items-end justify-center p-4">
+                    <div class="bg-white rounded-[24px] w-full max-w-sm p-4 shadow-2xl flex flex-col gap-3 animate-slide-up">
+                        <div class="flex items-center justify-between">
+                            <h4 id="modalTitle" class="text-sm font-black text-slate-800">おすそわけを登録</h4>
+                            <button onclick="closePostModal()" class="text-slate-400 hover:text-slate-600 text-lg font-black">×</button>
+                        </div>
+                        <!-- Modal Inputs -->
+                        <div class="flex flex-col gap-2">
+                            <label class="text-[10px] font-black text-slate-500">品名</label>
+                            <input id="modalItemName" type="text" class="bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold outline-none" placeholder="例: トマトの缶詰">
+
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="text-[10px] font-black text-slate-500">アイコン(絵文字)</label>
+                                    <input id="modalItemIcon" type="text" class="bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold outline-none text-center" placeholder="🍅" value="🍅">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-black text-slate-500">個数・数量</label>
+                                    <input id="modalItemQty" type="text" class="bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold outline-none text-center" placeholder="1" value="1">
+                                </div>
+                            </div>
+
+                            <label class="text-[10px] font-black text-slate-500">メッセージ</label>
+                            <textarea id="modalItemMsg" rows="2" class="bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold outline-none" placeholder="メッセージを入力してください..."></textarea>
+                        </div>
+                        <button onclick="submitPostModal()" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-black py-2 rounded-xl text-xs shadow-md">
+                            マップに新規投稿する
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaflet Javascript dynamic engine logic -->
+    <script>
+        // Leaflet.js Interactive Map logic with open street map data
+        let map;
+        let activeMarkers = [];
+        let currentArea = 'setagaya';
+        let currentPostType = 'give'; // give or request for modal input
+
+        // Pre-configured dynamic coordinate data
+        const areaData = {
+            setagaya: {
+                center: [35.6433, 139.6708], // San-cha
+                zoom: 15,
+                pins: [
+                    { lat: 35.6445, lng: 139.6715, type: 'give', emoji: '🍊', name: 'サバ缶(賞味期限近)', user: '田中さん', qty: '3個' },
+                    { lat: 35.6420, lng: 139.6685, type: 'request', emoji: '🚨', name: 'トマト缶', user: '鈴木さん(子育て世帯)', qty: '2個' },
+                    { lat: 35.6410, lng: 139.6725, type: 'station', emoji: '🏪', name: '鈴木商店', detail: '回収ステーション(都公認食品営業許可店舗)', address: '太子堂2丁目' },
+                    { lat: 35.6450, lng: 139.6690, type: 'station', emoji: '🏪', name: '三茶こども食堂', detail: '回収・おすそわけ対応ステーション', address: '三軒茶屋1丁目' }
+                ]
+            },
+            suginami: {
+                center: [35.7053, 139.6501], // Koenji
+                zoom: 15,
+                pins: [
+                    { lat: 35.7065, lng: 139.6515, type: 'give', emoji: '💧', name: '保存水 2L', user: '佐藤さん', qty: '4本' },
+                    { lat: 35.7040, lng: 139.6480, type: 'request', emoji: '🚨', name: 'レトルト離乳食', user: '高橋さん(保育世帯)', qty: '3個' },
+                    { lat: 35.7030, lng: 139.6520, type: 'station', emoji: '🏪', name: '高円寺フードバンク', detail: '都公認・回収協力ステーション', address: '高円寺南4丁目' }
+                ]
+            },
+            nerima: {
+                center: [35.7356, 139.6517], // Nerima Station
+                zoom: 15,
+                pins: [
+                    { lat: 35.7368, lng: 139.6525, type: 'give', emoji: '🌾', name: 'アルファ米(白米)', user: '渡辺さん', qty: '5食' },
+                    { lat: 35.7340, lng: 139.6495, type: 'request', emoji: '🚨', name: '大人用粉ミルク', user: '木村さん(福祉世帯)', qty: '1缶' },
+                    { lat: 35.7330, lng: 139.6530, type: 'station', emoji: '🏪', name: 'ねりま助け合い商店', detail: '都公認食品営業許可店舗', address: '練馬1丁目' }
+                ]
+            },
+            ota: {
+                center: [35.5624, 139.7161], // Kamata Station
+                zoom: 15,
+                pins: [
+                    { lat: 35.5638, lng: 139.7175, type: 'give', emoji: '🥫', name: 'ツナ缶3缶パック', user: '林さん', qty: '2パック' },
+                    { lat: 35.5595, lng: 139.7135, type: 'request', emoji: '🚨', name: 'アレルギー対応クッキー', user: '山口さん(小児アレルギー世帯)', qty: '1箱' },
+                    { lat: 35.5610, lng: 139.7185, type: 'station', emoji: '🏪', name: '蒲田みなみボランティア', detail: '地域福祉活動ステーション', address: '新蒲田1丁目' }
+                ]
+            }
+        };
+
+        // Initialize Leaflet map
+        function initLeafletMap() {
+            const defaultArea = areaData[currentArea];
+            map = L.map('leafletMap', {
+                zoomControl: false
+            }).setView(defaultArea.center, defaultArea.zoom);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap'
+            }).addTo(map);
+
+            loadMarkers(currentArea);
+        }
+
+        // Load specific markers depending on the area selected
+        function loadMarkers(areaKey) {
+            // Remove previous active markers
+            activeMarkers.forEach(marker => map.removeLayer(marker));
+            activeMarkers = [];
+
+            const area = areaData[areaKey];
+            area.pins.forEach(pin => {
+                let colorClass = 'bg-amber-500';
+                if (pin.type === 'request') colorClass = 'bg-rose-500';
+                if (pin.type === 'station') colorClass = 'bg-emerald-500';
+
+                // High contrast large emoji custom pin marker
+                const customIcon = L.divIcon({
+                    className: 'custom-div-icon',
+                    html: `<div class="marker-pin ${colorClass}">${pin.emoji}</div>`,
+                    iconSize: [38, 38],
+                    iconAnchor: [19, 19]
+                });
+
+                const marker = L.marker([pin.lat, pin.lng], { icon: customIcon }).addTo(map);
+
+                // Formulate popup content
+                let popupContent = "";
+                if (pin.type === 'station') {
+                    popupContent = `
+                        <div class="text-xs p-1 font-bold">
+                            <p class="font-black text-slate-800 text-sm">🏪 ${pin.name}</p>
+                            <p class="text-slate-500 text-[10px] mt-0.5">${pin.detail}</p>
+                            <p class="text-slate-400 text-[9px] mt-0.5">住所: ${pin.address}</p>
+                        </div>
+                    `;
+                } else {
+                    const tag = pin.type === 'give' ? '🍊 おすそわけ' : '🚨 譲ってほしい(SOS)';
+                    popupContent = `
+                        <div class="text-xs p-1 font-bold">
+                            <p class="font-black text-slate-800 text-sm">${pin.emoji} ${pin.name}</p>
+                            <p class="text-[10px] text-slate-500 mt-0.5">投稿者: ${pin.user} (${pin.qty})</p>
+                            <span class="inline-block mt-1 px-2 py-0.5 rounded text-[9px] text-white ${pin.type === 'give' ? 'bg-amber-500' : 'bg-rose-500'}">${tag}</span>
+                        </div>
+                    `;
+                }
+
+                marker.bindPopup(popupContent);
+                activeMarkers.push(marker);
+            });
+        }
+
+        // Swaps tab views in smartphone
+        function switchTab(tabIndex) {
+            // Reset tab visibility CSS classes
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
+
+            // Activate selected tab
+            if (tabIndex === 1) document.getElementById('tab-home').classList.remove('hidden');
+            if (tabIndex === 2) {
+                document.getElementById('tab-map').classList.remove('hidden');
+                // Trigger Leaflet auto-refresh resize calculation because it was hidden initially
+                setTimeout(() => {
+                    map.invalidateSize();
+                }, 100);
+            }
+            if (tabIndex === 3) {
+                document.getElementById('tab-stations').classList.remove('hidden');
+                renderStationList();
+            }
+            if (tabIndex === 4) document.getElementById('tab-recipes').classList.remove('hidden');
+
+            // Bottom nav style toggling
+            for (let i = 1; i <= 4; i++) {
+                const btn = document.getElementById(`nav-btn-${i}`);
+                if (i === tabIndex) {
+                    btn.classList.add('text-[#10b981]', 'scale-105');
+                    btn.classList.remove('text-slate-400');
+                } else {
+                    btn.classList.remove('text-[#10b981]', 'scale-105');
+                    btn.classList.add('text-slate-400');
+                }
+            }
+        }
+
+        // Toggle Area dropdown selection list
+        function toggleAreaDropdown() {
+            const dropdown = document.getElementById('areaDropdown');
+            dropdown.classList.toggle('hidden');
+        }
+
+        // Change simulated active municipality area
+        function changeArea(areaKey) {
+            currentArea = areaKey;
+            const dropdown = document.getElementById('areaDropdown');
+            dropdown.classList.add('hidden');
+
+            const btnText = {
+                setagaya: '📍 世田谷区',
+                suginami: '📍 杉並区',
+                nerima: '📍 練馬区',
+                ota: '📍 大田区'
+            }[areaKey];
+
+            document.getElementById('areaBtn').innerHTML = btnText + ' <span class="text-[9px]">▼</span>';
+
+            // Trigger smooth map pan flyTo
+            const area = areaData[areaKey];
+            map.flyTo(area.center, area.zoom, { duration: 1.5 });
+
+            // Re-render markers and list items
+            loadMarkers(areaKey);
+            renderStationList();
+
+            // Provide user feedback toast popup
+            showToast('📍', `エリアを${btnText.replace('📍 ', '')}に変更しました`);
+        }
+
+        // Render the Cooperation Stations List screen items based on area
+        function renderStationList() {
+            const container = document.getElementById('stationListContainer');
+            container.innerHTML = "";
+            const currentPins = areaData[currentArea].pins.filter(pin => pin.type === 'station');
+
+            currentPins.forEach(station => {
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-xl p-2.5 border border-slate-100 shadow-sm flex flex-col gap-1.5 font-bold text-xs";
+                card.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <p class="font-black text-slate-800 text-sm">🏪 ${station.name}</p>
+                        <span class="text-[9px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full font-black">回収協力店</span>
+                    </div>
+                    <p class="text-slate-500 text-[10px] leading-tight font-bold">${station.detail}</p>
+                    <div class="flex items-center justify-between mt-1">
+                        <span class="text-[9px] text-slate-400">場所: ${station.address}</span>
+                        <button onclick="locateOnMap(${station.lat}, ${station.lng}, '${station.name}')" class="bg-[#10b981] hover:bg-emerald-600 text-white font-black px-2.5 py-1 rounded shadow text-[9px] transition-colors">
+                            📍 地図でピンを表示
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Jumps tab screen dynamically to map and zooms/opens marker popup
+        function locateOnMap(lat, lng, name) {
+            switchTab(2);
+            map.setView([lat, lng], 16);
+
+            // Search marker and open popup
+            activeMarkers.forEach(marker => {
+                const pos = marker.getLatLng();
+                if (pos.lat === lat && pos.lng === lng) {
+                    setTimeout(() => {
+                        marker.openPopup();
+                    }, 500);
+                }
+            });
+        }
+
+        // Geolocation Simulator logic
+        function geolocateSimulator() {
+            const center = areaData[currentArea].center;
+            map.flyTo(center, 16, { duration: 1.0 });
+            showToast('🎯', '現在地付近にフォーカスしました');
+        }
+
+        // Floating Toast Popup notification function
+        function showToast(icon, msg) {
+            const toast = document.getElementById('toastNotification');
+            document.getElementById('toastIcon').textContent = icon;
+            document.getElementById('toastMessage').textContent = msg;
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+
+        // Interactive simulation run of data synchronisation from 'Sonaestock'
+        let hasSynced = false;
+        function runDataSync() {
+            if (hasSynced) {
+                showToast('ℹ️', 'データはすでに最新の状態に同期されています');
+                return;
+            }
+
+            // Trigger loading styling rotation
+            const syncBtn = document.getElementById('syncBtn');
+            syncBtn.innerHTML = "🔄 同期中...";
+            syncBtn.disabled = true;
+
+            setTimeout(() => {
+                hasSynced = true;
+                syncBtn.innerHTML = "🔄 同期完了";
+
+                // Show reset sync button triggers
+                document.getElementById('resetSyncBtn').classList.remove('hidden');
+
+                // Animate progress circle values
+                document.getElementById('progressCircle').setAttribute('stroke-dashoffset', '26.4'); // Dashoffset corresponds to 85%
+                document.getElementById('progressText').textContent = '85%';
+                document.getElementById('syncStatus').textContent = '同期完了 (野菜ジュース3本を追加)';
+
+                // Dynamically insert synchronized rolling stock item to user UI lists
+                const list = document.getElementById('stockListContainer');
+                const synchedItem = document.createElement('div');
+                synchedItem.id = "syncedJuiceItem";
+                synchedItem.className = "flex items-center justify-between bg-emerald-50 p-1.5 rounded-lg border border-emerald-100 text-[11px] font-bold animate-bounce";
+                synchedItem.innerHTML = `
+                    <div class="flex items-center gap-1.5 min-w-0">
+                        <span class="text-lg flex-shrink-0">🧃</span>
+                        <div class="truncate">
+                            <p class="font-black truncate text-slate-800">野菜ジュース (カゴメ3本)</p>
+                            <p class="text-[9px] text-emerald-600 font-black">備えストック自動連携品 (期限近)</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <span class="text-slate-500 font-black">×3本</span>
+                        <button onclick="postPredefinedItem('カゴメ野菜ジュース', '🧃', '3', '備えストックから同期したお野菜ジュースです')" class="bg-amber-500 hover:bg-amber-600 text-white font-black px-1.5 py-0.5 rounded shadow text-[9px]">おすそわけ</button>
+                    </div>
+                `;
+                list.insertBefore(synchedItem, list.firstChild);
+
+                showToast('🤝', 'カゴメ野菜ジュース3本を自動同期しました！');
+            }, 1200);
+        }
+
+        // Reset synchronization back to 72% default to replay demoplay
+        function resetSyncData() {
+            hasSynced = false;
+
+            // Restore button styling
+            const syncBtn = document.getElementById('syncBtn');
+            syncBtn.innerHTML = "🔄 備蓄データを同期";
+            syncBtn.disabled = false;
+
+            document.getElementById('resetSyncBtn').classList.add('hidden');
+
+            // Restore dashboard values
+            document.getElementById('progressCircle').setAttribute('stroke-dashoffset', '49.2'); // Dashoffset corresponds to 72%
+            document.getElementById('progressText').textContent = '72%';
+            document.getElementById('syncStatus').textContent = '自動同期中';
+
+            // Remove synced item
+            const syncedItem = document.getElementById('syncedJuiceItem');
+            if (syncedItem) syncedItem.remove();
+
+            showToast('↺', 'データを同期前の初期状態にリセットしました');
+        }
+
+        // Modal triggers
+        function openPostModal(type) {
+            currentPostType = type;
+            const modal = document.getElementById('postModal');
+            const title = document.getElementById('modalTitle');
+            const placeholder = document.getElementById('modalItemMsg');
+
+            if (type === 'give') {
+                title.textContent = "🤝 譲ります (おすそわけ登録)";
+                placeholder.placeholder = "例: 余ってしまったので、必要な方どうぞ！";
+                document.getElementById('modalItemIcon').value = "🥫";
+            } else {
+                title.textContent = "🚨 譲ってください (SOS要請登録)";
+                placeholder.placeholder = "例: 離乳食作りにトマト缶が1つ足りず、分けて欲しいです！";
+                document.getElementById('modalItemIcon').value = "🍅";
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        function closePostModal() {
+            document.getElementById('postModal').classList.add('hidden');
+        }
+
+        // New Custom Pin Registration to interactive map simulation
+        function submitPostModal() {
+            const name = document.getElementById('modalItemName').value.trim();
+            const icon = document.getElementById('modalItemIcon').value.trim() || '🥫';
+            const qty = document.getElementById('modalItemQty').value.trim() || '1個';
+            const msg = document.getElementById('modalItemMsg').value.trim();
+
+            if (!name) {
+                alert('品名を入力してください');
+                return;
+            }
+
+            // Map Center Coordinates
+            const center = map.getCenter();
+            // Randomize slightly so they don't land exactly on center point
+            const lat = center.lat + (Math.random() - 0.5) * 0.003;
+            const lng = center.lng + (Math.random() - 0.5) * 0.003;
+
+            // Push to current active area dataset
+            const newPin = {
+                lat: lat,
+                lng: lng,
+                type: currentPostType,
+                emoji: icon,
+                name: name,
+                user: 'あなた (現在地)',
+                qty: qty + (msg ? ` - 「${msg}」` : '')
+            };
+
+            areaData[currentArea].pins.push(newPin);
+
+            // Reload markers
+            loadMarkers(currentArea);
+
+            closePostModal();
+
+            // Notify and jump to map view
+            showToast(icon, `${name}の${currentPostType === 'give' ? '提供' : 'SOS'}投稿をMAPに追加しました！`);
+
+            setTimeout(() => {
+                switchTab(2);
+                map.setView([lat, lng], 16);
+            }, 600);
+        }
+
+        // Quick Post Helper for Predefined Stock items
+        function postPredefinedItem(name, emoji, qty, defaultMsg) {
+            const center = map.getCenter();
+            const lat = center.lat + (Math.random() - 0.5) * 0.002;
+            const lng = center.lng + (Math.random() - 0.5) * 0.002;
+
+            const newPin = {
+                lat: lat,
+                lng: lng,
+                type: 'give',
+                emoji: emoji,
+                name: name,
+                user: 'あなた',
+                qty: `${qty}個 - 「${defaultMsg}」`
+            };
+
+            areaData[currentArea].pins.push(newPin);
+            loadMarkers(currentArea);
+
+            showToast(emoji, `${name}をMAPにおすそわけ出品しました！`);
+
+            setTimeout(() => {
+                switchTab(2);
+                map.setView([lat, lng], 16);
+            }, 600);
+        }
+
+        // Initialize things on window load
+        window.onload = function() {
+            initLeafletMap();
+            renderStationList();
+        };
+    </script>
+</body>
+</html>
